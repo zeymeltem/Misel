@@ -1,0 +1,8 @@
+kotlin version: 2.2.20
+error message: The daemon has terminated unexpectedly on startup attempt #1 with exit code: 1. The daemon process output:
+    1. Error occurred during initialization of VM
+    2. Unable to allocate 262144KB bitmaps for parallel garbage collection for the requested 8388608KB heap.
+    3. Error: Could not create the Java Virtual Machine.
+    4. Error: A fatal exception has occurred. Program will exit.
+The daemon didn't produce the message "Kotlin compile daemon is ready" during startup.
+

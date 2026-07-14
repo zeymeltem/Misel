@@ -1,0 +1,1197 @@
+// **************************************************************************
+// _IsarCollectionGenerator
+// **************************************************************************
+
+// coverage:ignore-file
+// ignore_for_file: duplicate_ignore, invalid_use_of_protected_member, lines_longer_than_80_chars, constant_identifier_names, avoid_js_rounded_ints, no_leading_underscores_for_local_identifiers, require_trailing_commas, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_in_if_null_operators, library_private_types_in_public_api, prefer_const_constructors
+// ignore_for_file: type=lint
+
+extension GetSessionCollection on Isar {
+  IsarCollection<int, Session> get sessions => this.collection();
+}
+
+final SessionSchema = IsarGeneratedSchema(
+  schema: IsarSchema(
+    name: 'Session',
+    idName: 'id',
+    embedded: false,
+    properties: [
+      IsarPropertySchema(name: 'startTime', type: IsarType.dateTime),
+      IsarPropertySchema(name: 'targetMinutes', type: IsarType.long),
+      IsarPropertySchema(name: 'actualMinutes', type: IsarType.long),
+      IsarPropertySchema(
+        name: 'status',
+        type: IsarType.byte,
+
+        enumMap: {"success": 0, "failed": 1, "cancelled": 2},
+      ),
+      IsarPropertySchema(name: 'tagId', type: IsarType.long),
+      IsarPropertySchema(name: 'mushroomTypeId', type: IsarType.long),
+      IsarPropertySchema(name: 'coinsEarned', type: IsarType.long),
+    ],
+    indexes: [],
+  ),
+  converter: IsarObjectConverter<int, Session>(
+    serialize: serializeSession,
+    deserialize: deserializeSession,
+    deserializeProperty: deserializeSessionProp,
+  ),
+  getEmbeddedSchemas: () => [],
+);
+
+@isarProtected
+int serializeSession(IsarWriter writer, Session object) {
+  IsarCore.writeLong(
+    writer,
+    1,
+    object.startTime.toUtc().microsecondsSinceEpoch,
+  );
+  IsarCore.writeLong(writer, 2, object.targetMinutes);
+  IsarCore.writeLong(writer, 3, object.actualMinutes);
+  IsarCore.writeByte(writer, 4, object.status.index);
+  IsarCore.writeLong(writer, 5, object.tagId ?? -9223372036854775808);
+  IsarCore.writeLong(writer, 6, object.mushroomTypeId);
+  IsarCore.writeLong(writer, 7, object.coinsEarned);
+  return object.id;
+}
+
+@isarProtected
+Session deserializeSession(IsarReader reader) {
+  final object = Session();
+  object.id = IsarCore.readId(reader);
+  {
+    final value = IsarCore.readLong(reader, 1);
+    if (value == -9223372036854775808) {
+      object.startTime = DateTime.fromMillisecondsSinceEpoch(
+        0,
+        isUtc: true,
+      ).toLocal();
+    } else {
+      object.startTime = DateTime.fromMicrosecondsSinceEpoch(
+        value,
+        isUtc: true,
+      ).toLocal();
+    }
+  }
+  object.targetMinutes = IsarCore.readLong(reader, 2);
+  object.actualMinutes = IsarCore.readLong(reader, 3);
+  {
+    if (IsarCore.readNull(reader, 4)) {
+      object.status = SessionStatus.success;
+    } else {
+      object.status =
+          _sessionStatus[IsarCore.readByte(reader, 4)] ?? SessionStatus.success;
+    }
+  }
+  {
+    final value = IsarCore.readLong(reader, 5);
+    if (value == -9223372036854775808) {
+      object.tagId = null;
+    } else {
+      object.tagId = value;
+    }
+  }
+  object.mushroomTypeId = IsarCore.readLong(reader, 6);
+  object.coinsEarned = IsarCore.readLong(reader, 7);
+  return object;
+}
+
+@isarProtected
+dynamic deserializeSessionProp(IsarReader reader, int property) {
+  switch (property) {
+    case 0:
+      return IsarCore.readId(reader);
+    case 1:
+      {
+        final value = IsarCore.readLong(reader, 1);
+        if (value == -9223372036854775808) {
+          return DateTime.fromMillisecondsSinceEpoch(0, isUtc: true).toLocal();
+        } else {
+          return DateTime.fromMicrosecondsSinceEpoch(
+            value,
+            isUtc: true,
+          ).toLocal();
+        }
+      }
+    case 2:
+      return IsarCore.readLong(reader, 2);
+    case 3:
+      return IsarCore.readLong(reader, 3);
+    case 4:
+      {
+        if (IsarCore.readNull(reader, 4)) {
+          return SessionStatus.success;
+        } else {
+          return _sessionStatus[IsarCore.readByte(reader, 4)] ??
+              SessionStatus.success;
+        }
+      }
+    case 5:
+      {
+        final value = IsarCore.readLong(reader, 5);
+        if (value == -9223372036854775808) {
+          return null;
+        } else {
+          return value;
+        }
+      }
+    case 6:
+      return IsarCore.readLong(reader, 6);
+    case 7:
+      return IsarCore.readLong(reader, 7);
+    default:
+      throw ArgumentError('Unknown property: $property');
+  }
+}
+
+sealed class _SessionUpdate {
+  bool call({
+    required int id,
+    DateTime? startTime,
+    int? targetMinutes,
+    int? actualMinutes,
+    SessionStatus? status,
+    int? tagId,
+    int? mushroomTypeId,
+    int? coinsEarned,
+  });
+}
+
+class _SessionUpdateImpl implements _SessionUpdate {
+  const _SessionUpdateImpl(this.collection);
+
+  final IsarCollection<int, Session> collection;
+
+  @override
+  bool call({
+    required int id,
+    Object? startTime = ignore,
+    Object? targetMinutes = ignore,
+    Object? actualMinutes = ignore,
+    Object? status = ignore,
+    Object? tagId = ignore,
+    Object? mushroomTypeId = ignore,
+    Object? coinsEarned = ignore,
+  }) {
+    return collection.updateProperties(
+          [id],
+          {
+            if (startTime != ignore) 1: startTime as DateTime?,
+            if (targetMinutes != ignore) 2: targetMinutes as int?,
+            if (actualMinutes != ignore) 3: actualMinutes as int?,
+            if (status != ignore) 4: status as SessionStatus?,
+            if (tagId != ignore) 5: tagId as int?,
+            if (mushroomTypeId != ignore) 6: mushroomTypeId as int?,
+            if (coinsEarned != ignore) 7: coinsEarned as int?,
+          },
+        ) >
+        0;
+  }
+}
+
+sealed class _SessionUpdateAll {
+  int call({
+    required List<int> id,
+    DateTime? startTime,
+    int? targetMinutes,
+    int? actualMinutes,
+    SessionStatus? status,
+    int? tagId,
+    int? mushroomTypeId,
+    int? coinsEarned,
+  });
+}
+
+class _SessionUpdateAllImpl implements _SessionUpdateAll {
+  const _SessionUpdateAllImpl(this.collection);
+
+  final IsarCollection<int, Session> collection;
+
+  @override
+  int call({
+    required List<int> id,
+    Object? startTime = ignore,
+    Object? targetMinutes = ignore,
+    Object? actualMinutes = ignore,
+    Object? status = ignore,
+    Object? tagId = ignore,
+    Object? mushroomTypeId = ignore,
+    Object? coinsEarned = ignore,
+  }) {
+    return collection.updateProperties(id, {
+      if (startTime != ignore) 1: startTime as DateTime?,
+      if (targetMinutes != ignore) 2: targetMinutes as int?,
+      if (actualMinutes != ignore) 3: actualMinutes as int?,
+      if (status != ignore) 4: status as SessionStatus?,
+      if (tagId != ignore) 5: tagId as int?,
+      if (mushroomTypeId != ignore) 6: mushroomTypeId as int?,
+      if (coinsEarned != ignore) 7: coinsEarned as int?,
+    });
+  }
+}
+
+extension SessionUpdate on IsarCollection<int, Session> {
+  _SessionUpdate get update => _SessionUpdateImpl(this);
+
+  _SessionUpdateAll get updateAll => _SessionUpdateAllImpl(this);
+}
+
+sealed class _SessionQueryUpdate {
+  int call({
+    DateTime? startTime,
+    int? targetMinutes,
+    int? actualMinutes,
+    SessionStatus? status,
+    int? tagId,
+    int? mushroomTypeId,
+    int? coinsEarned,
+  });
+}
+
+class _SessionQueryUpdateImpl implements _SessionQueryUpdate {
+  const _SessionQueryUpdateImpl(this.query, {this.limit});
+
+  final IsarQuery<Session> query;
+  final int? limit;
+
+  @override
+  int call({
+    Object? startTime = ignore,
+    Object? targetMinutes = ignore,
+    Object? actualMinutes = ignore,
+    Object? status = ignore,
+    Object? tagId = ignore,
+    Object? mushroomTypeId = ignore,
+    Object? coinsEarned = ignore,
+  }) {
+    return query.updateProperties(limit: limit, {
+      if (startTime != ignore) 1: startTime as DateTime?,
+      if (targetMinutes != ignore) 2: targetMinutes as int?,
+      if (actualMinutes != ignore) 3: actualMinutes as int?,
+      if (status != ignore) 4: status as SessionStatus?,
+      if (tagId != ignore) 5: tagId as int?,
+      if (mushroomTypeId != ignore) 6: mushroomTypeId as int?,
+      if (coinsEarned != ignore) 7: coinsEarned as int?,
+    });
+  }
+}
+
+extension SessionQueryUpdate on IsarQuery<Session> {
+  _SessionQueryUpdate get updateFirst =>
+      _SessionQueryUpdateImpl(this, limit: 1);
+
+  _SessionQueryUpdate get updateAll => _SessionQueryUpdateImpl(this);
+}
+
+class _SessionQueryBuilderUpdateImpl implements _SessionQueryUpdate {
+  const _SessionQueryBuilderUpdateImpl(this.query, {this.limit});
+
+  final QueryBuilder<Session, Session, QOperations> query;
+  final int? limit;
+
+  @override
+  int call({
+    Object? startTime = ignore,
+    Object? targetMinutes = ignore,
+    Object? actualMinutes = ignore,
+    Object? status = ignore,
+    Object? tagId = ignore,
+    Object? mushroomTypeId = ignore,
+    Object? coinsEarned = ignore,
+  }) {
+    final q = query.build();
+    try {
+      return q.updateProperties(limit: limit, {
+        if (startTime != ignore) 1: startTime as DateTime?,
+        if (targetMinutes != ignore) 2: targetMinutes as int?,
+        if (actualMinutes != ignore) 3: actualMinutes as int?,
+        if (status != ignore) 4: status as SessionStatus?,
+        if (tagId != ignore) 5: tagId as int?,
+        if (mushroomTypeId != ignore) 6: mushroomTypeId as int?,
+        if (coinsEarned != ignore) 7: coinsEarned as int?,
+      });
+    } finally {
+      q.close();
+    }
+  }
+}
+
+extension SessionQueryBuilderUpdate
+    on QueryBuilder<Session, Session, QOperations> {
+  _SessionQueryUpdate get updateFirst =>
+      _SessionQueryBuilderUpdateImpl(this, limit: 1);
+
+  _SessionQueryUpdate get updateAll => _SessionQueryBuilderUpdateImpl(this);
+}
+
+const _sessionStatus = {
+  0: SessionStatus.success,
+  1: SessionStatus.failed,
+  2: SessionStatus.cancelled,
+};
+
+extension SessionQueryFilter
+    on QueryBuilder<Session, Session, QFilterCondition> {
+  QueryBuilder<Session, Session, QAfterFilterCondition> idEqualTo(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EqualCondition(property: 0, value: value),
+      );
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterFilterCondition> idGreaterThan(
+    int value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterCondition(property: 0, value: value),
+      );
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterFilterCondition> idGreaterThanOrEqualTo(
+    int value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterOrEqualCondition(property: 0, value: value),
+      );
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterFilterCondition> idLessThan(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(LessCondition(property: 0, value: value));
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterFilterCondition> idLessThanOrEqualTo(
+    int value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessOrEqualCondition(property: 0, value: value),
+      );
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterFilterCondition> idBetween(
+    int lower,
+    int upper,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        BetweenCondition(property: 0, lower: lower, upper: upper),
+      );
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterFilterCondition> startTimeEqualTo(
+    DateTime value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EqualCondition(property: 1, value: value),
+      );
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterFilterCondition> startTimeGreaterThan(
+    DateTime value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterCondition(property: 1, value: value),
+      );
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterFilterCondition>
+  startTimeGreaterThanOrEqualTo(DateTime value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterOrEqualCondition(property: 1, value: value),
+      );
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterFilterCondition> startTimeLessThan(
+    DateTime value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(LessCondition(property: 1, value: value));
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterFilterCondition>
+  startTimeLessThanOrEqualTo(DateTime value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessOrEqualCondition(property: 1, value: value),
+      );
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterFilterCondition> startTimeBetween(
+    DateTime lower,
+    DateTime upper,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        BetweenCondition(property: 1, lower: lower, upper: upper),
+      );
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterFilterCondition> targetMinutesEqualTo(
+    int value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EqualCondition(property: 2, value: value),
+      );
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterFilterCondition>
+  targetMinutesGreaterThan(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterCondition(property: 2, value: value),
+      );
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterFilterCondition>
+  targetMinutesGreaterThanOrEqualTo(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterOrEqualCondition(property: 2, value: value),
+      );
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterFilterCondition> targetMinutesLessThan(
+    int value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(LessCondition(property: 2, value: value));
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterFilterCondition>
+  targetMinutesLessThanOrEqualTo(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessOrEqualCondition(property: 2, value: value),
+      );
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterFilterCondition> targetMinutesBetween(
+    int lower,
+    int upper,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        BetweenCondition(property: 2, lower: lower, upper: upper),
+      );
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterFilterCondition> actualMinutesEqualTo(
+    int value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EqualCondition(property: 3, value: value),
+      );
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterFilterCondition>
+  actualMinutesGreaterThan(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterCondition(property: 3, value: value),
+      );
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterFilterCondition>
+  actualMinutesGreaterThanOrEqualTo(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterOrEqualCondition(property: 3, value: value),
+      );
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterFilterCondition> actualMinutesLessThan(
+    int value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(LessCondition(property: 3, value: value));
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterFilterCondition>
+  actualMinutesLessThanOrEqualTo(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessOrEqualCondition(property: 3, value: value),
+      );
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterFilterCondition> actualMinutesBetween(
+    int lower,
+    int upper,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        BetweenCondition(property: 3, lower: lower, upper: upper),
+      );
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterFilterCondition> statusEqualTo(
+    SessionStatus value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EqualCondition(property: 4, value: value.index),
+      );
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterFilterCondition> statusGreaterThan(
+    SessionStatus value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterCondition(property: 4, value: value.index),
+      );
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterFilterCondition>
+  statusGreaterThanOrEqualTo(SessionStatus value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterOrEqualCondition(property: 4, value: value.index),
+      );
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterFilterCondition> statusLessThan(
+    SessionStatus value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessCondition(property: 4, value: value.index),
+      );
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterFilterCondition> statusLessThanOrEqualTo(
+    SessionStatus value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessOrEqualCondition(property: 4, value: value.index),
+      );
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterFilterCondition> statusBetween(
+    SessionStatus lower,
+    SessionStatus upper,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        BetweenCondition(property: 4, lower: lower.index, upper: upper.index),
+      );
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterFilterCondition> tagIdIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const IsNullCondition(property: 5));
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterFilterCondition> tagIdIsNotNull() {
+    return QueryBuilder.apply(not(), (query) {
+      return query.addFilterCondition(const IsNullCondition(property: 5));
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterFilterCondition> tagIdEqualTo(
+    int? value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EqualCondition(property: 5, value: value),
+      );
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterFilterCondition> tagIdGreaterThan(
+    int? value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterCondition(property: 5, value: value),
+      );
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterFilterCondition>
+  tagIdGreaterThanOrEqualTo(int? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterOrEqualCondition(property: 5, value: value),
+      );
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterFilterCondition> tagIdLessThan(
+    int? value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(LessCondition(property: 5, value: value));
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterFilterCondition> tagIdLessThanOrEqualTo(
+    int? value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessOrEqualCondition(property: 5, value: value),
+      );
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterFilterCondition> tagIdBetween(
+    int? lower,
+    int? upper,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        BetweenCondition(property: 5, lower: lower, upper: upper),
+      );
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterFilterCondition> mushroomTypeIdEqualTo(
+    int value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EqualCondition(property: 6, value: value),
+      );
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterFilterCondition>
+  mushroomTypeIdGreaterThan(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterCondition(property: 6, value: value),
+      );
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterFilterCondition>
+  mushroomTypeIdGreaterThanOrEqualTo(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterOrEqualCondition(property: 6, value: value),
+      );
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterFilterCondition> mushroomTypeIdLessThan(
+    int value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(LessCondition(property: 6, value: value));
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterFilterCondition>
+  mushroomTypeIdLessThanOrEqualTo(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessOrEqualCondition(property: 6, value: value),
+      );
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterFilterCondition> mushroomTypeIdBetween(
+    int lower,
+    int upper,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        BetweenCondition(property: 6, lower: lower, upper: upper),
+      );
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterFilterCondition> coinsEarnedEqualTo(
+    int value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EqualCondition(property: 7, value: value),
+      );
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterFilterCondition> coinsEarnedGreaterThan(
+    int value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterCondition(property: 7, value: value),
+      );
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterFilterCondition>
+  coinsEarnedGreaterThanOrEqualTo(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterOrEqualCondition(property: 7, value: value),
+      );
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterFilterCondition> coinsEarnedLessThan(
+    int value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(LessCondition(property: 7, value: value));
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterFilterCondition>
+  coinsEarnedLessThanOrEqualTo(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessOrEqualCondition(property: 7, value: value),
+      );
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterFilterCondition> coinsEarnedBetween(
+    int lower,
+    int upper,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        BetweenCondition(property: 7, lower: lower, upper: upper),
+      );
+    });
+  }
+}
+
+extension SessionQueryObject
+    on QueryBuilder<Session, Session, QFilterCondition> {}
+
+extension SessionQuerySortBy on QueryBuilder<Session, Session, QSortBy> {
+  QueryBuilder<Session, Session, QAfterSortBy> sortById() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(0);
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterSortBy> sortByIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(0, sort: Sort.desc);
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterSortBy> sortByStartTime() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(1);
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterSortBy> sortByStartTimeDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(1, sort: Sort.desc);
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterSortBy> sortByTargetMinutes() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(2);
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterSortBy> sortByTargetMinutesDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(2, sort: Sort.desc);
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterSortBy> sortByActualMinutes() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(3);
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterSortBy> sortByActualMinutesDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(3, sort: Sort.desc);
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterSortBy> sortByStatus() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(4);
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterSortBy> sortByStatusDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(4, sort: Sort.desc);
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterSortBy> sortByTagId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(5);
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterSortBy> sortByTagIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(5, sort: Sort.desc);
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterSortBy> sortByMushroomTypeId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(6);
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterSortBy> sortByMushroomTypeIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(6, sort: Sort.desc);
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterSortBy> sortByCoinsEarned() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(7);
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterSortBy> sortByCoinsEarnedDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(7, sort: Sort.desc);
+    });
+  }
+}
+
+extension SessionQuerySortThenBy
+    on QueryBuilder<Session, Session, QSortThenBy> {
+  QueryBuilder<Session, Session, QAfterSortBy> thenById() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(0);
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterSortBy> thenByIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(0, sort: Sort.desc);
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterSortBy> thenByStartTime() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(1);
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterSortBy> thenByStartTimeDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(1, sort: Sort.desc);
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterSortBy> thenByTargetMinutes() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(2);
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterSortBy> thenByTargetMinutesDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(2, sort: Sort.desc);
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterSortBy> thenByActualMinutes() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(3);
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterSortBy> thenByActualMinutesDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(3, sort: Sort.desc);
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterSortBy> thenByStatus() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(4);
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterSortBy> thenByStatusDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(4, sort: Sort.desc);
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterSortBy> thenByTagId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(5);
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterSortBy> thenByTagIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(5, sort: Sort.desc);
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterSortBy> thenByMushroomTypeId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(6);
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterSortBy> thenByMushroomTypeIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(6, sort: Sort.desc);
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterSortBy> thenByCoinsEarned() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(7);
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterSortBy> thenByCoinsEarnedDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(7, sort: Sort.desc);
+    });
+  }
+}
+
+extension SessionQueryWhereDistinct
+    on QueryBuilder<Session, Session, QDistinct> {
+  QueryBuilder<Session, Session, QAfterDistinct> distinctByStartTime() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(1);
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterDistinct> distinctByTargetMinutes() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(2);
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterDistinct> distinctByActualMinutes() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(3);
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterDistinct> distinctByStatus() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(4);
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterDistinct> distinctByTagId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(5);
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterDistinct> distinctByMushroomTypeId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(6);
+    });
+  }
+
+  QueryBuilder<Session, Session, QAfterDistinct> distinctByCoinsEarned() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(7);
+    });
+  }
+}
+
+extension SessionQueryProperty1 on QueryBuilder<Session, Session, QProperty> {
+  QueryBuilder<Session, int, QAfterProperty> idProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(0);
+    });
+  }
+
+  QueryBuilder<Session, DateTime, QAfterProperty> startTimeProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(1);
+    });
+  }
+
+  QueryBuilder<Session, int, QAfterProperty> targetMinutesProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(2);
+    });
+  }
+
+  QueryBuilder<Session, int, QAfterProperty> actualMinutesProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(3);
+    });
+  }
+
+  QueryBuilder<Session, SessionStatus, QAfterProperty> statusProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(4);
+    });
+  }
+
+  QueryBuilder<Session, int?, QAfterProperty> tagIdProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(5);
+    });
+  }
+
+  QueryBuilder<Session, int, QAfterProperty> mushroomTypeIdProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(6);
+    });
+  }
+
+  QueryBuilder<Session, int, QAfterProperty> coinsEarnedProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(7);
+    });
+  }
+}
+
+extension SessionQueryProperty2<R> on QueryBuilder<Session, R, QAfterProperty> {
+  QueryBuilder<Session, (R, int), QAfterProperty> idProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(0);
+    });
+  }
+
+  QueryBuilder<Session, (R, DateTime), QAfterProperty> startTimeProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(1);
+    });
+  }
+
+  QueryBuilder<Session, (R, int), QAfterProperty> targetMinutesProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(2);
+    });
+  }
+
+  QueryBuilder<Session, (R, int), QAfterProperty> actualMinutesProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(3);
+    });
+  }
+
+  QueryBuilder<Session, (R, SessionStatus), QAfterProperty> statusProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(4);
+    });
+  }
+
+  QueryBuilder<Session, (R, int?), QAfterProperty> tagIdProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(5);
+    });
+  }
+
+  QueryBuilder<Session, (R, int), QAfterProperty> mushroomTypeIdProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(6);
+    });
+  }
+
+  QueryBuilder<Session, (R, int), QAfterProperty> coinsEarnedProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(7);
+    });
+  }
+}
+
+extension SessionQueryProperty3<R1, R2>
+    on QueryBuilder<Session, (R1, R2), QAfterProperty> {
+  QueryBuilder<Session, (R1, R2, int), QOperations> idProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(0);
+    });
+  }
+
+  QueryBuilder<Session, (R1, R2, DateTime), QOperations> startTimeProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(1);
+    });
+  }
+
+  QueryBuilder<Session, (R1, R2, int), QOperations> targetMinutesProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(2);
+    });
+  }
+
+  QueryBuilder<Session, (R1, R2, int), QOperations> actualMinutesProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(3);
+    });
+  }
+
+  QueryBuilder<Session, (R1, R2, SessionStatus), QOperations> statusProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(4);
+    });
+  }
+
+  QueryBuilder<Session, (R1, R2, int?), QOperations> tagIdProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(5);
+    });
+  }
+
+  QueryBuilder<Session, (R1, R2, int), QOperations> mushroomTypeIdProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(6);
+    });
+  }
+
+  QueryBuilder<Session, (R1, R2, int), QOperations> coinsEarnedProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(7);
+    });
+  }
+}

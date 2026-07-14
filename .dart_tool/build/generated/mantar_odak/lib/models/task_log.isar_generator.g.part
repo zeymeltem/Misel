@@ -1,0 +1,610 @@
+// **************************************************************************
+// _IsarCollectionGenerator
+// **************************************************************************
+
+// coverage:ignore-file
+// ignore_for_file: duplicate_ignore, invalid_use_of_protected_member, lines_longer_than_80_chars, constant_identifier_names, avoid_js_rounded_ints, no_leading_underscores_for_local_identifiers, require_trailing_commas, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_in_if_null_operators, library_private_types_in_public_api, prefer_const_constructors
+// ignore_for_file: type=lint
+
+extension GetTaskLogCollection on Isar {
+  IsarCollection<int, TaskLog> get taskLogs => this.collection();
+}
+
+final TaskLogSchema = IsarGeneratedSchema(
+  schema: IsarSchema(
+    name: 'TaskLog',
+    idName: 'id',
+    embedded: false,
+    properties: [
+      IsarPropertySchema(name: 'date', type: IsarType.dateTime),
+      IsarPropertySchema(name: 'taskId', type: IsarType.long),
+      IsarPropertySchema(name: 'wasCompleted', type: IsarType.bool),
+    ],
+    indexes: [
+      IsarIndexSchema(
+        name: 'date',
+        properties: ["date"],
+        unique: false,
+        hash: false,
+      ),
+    ],
+  ),
+  converter: IsarObjectConverter<int, TaskLog>(
+    serialize: serializeTaskLog,
+    deserialize: deserializeTaskLog,
+    deserializeProperty: deserializeTaskLogProp,
+  ),
+  getEmbeddedSchemas: () => [],
+);
+
+@isarProtected
+int serializeTaskLog(IsarWriter writer, TaskLog object) {
+  IsarCore.writeLong(writer, 1, object.date.toUtc().microsecondsSinceEpoch);
+  IsarCore.writeLong(writer, 2, object.taskId);
+  IsarCore.writeBool(writer, 3, value: object.wasCompleted);
+  return object.id;
+}
+
+@isarProtected
+TaskLog deserializeTaskLog(IsarReader reader) {
+  final object = TaskLog();
+  object.id = IsarCore.readId(reader);
+  {
+    final value = IsarCore.readLong(reader, 1);
+    if (value == -9223372036854775808) {
+      object.date = DateTime.fromMillisecondsSinceEpoch(
+        0,
+        isUtc: true,
+      ).toLocal();
+    } else {
+      object.date = DateTime.fromMicrosecondsSinceEpoch(
+        value,
+        isUtc: true,
+      ).toLocal();
+    }
+  }
+  object.taskId = IsarCore.readLong(reader, 2);
+  object.wasCompleted = IsarCore.readBool(reader, 3);
+  return object;
+}
+
+@isarProtected
+dynamic deserializeTaskLogProp(IsarReader reader, int property) {
+  switch (property) {
+    case 0:
+      return IsarCore.readId(reader);
+    case 1:
+      {
+        final value = IsarCore.readLong(reader, 1);
+        if (value == -9223372036854775808) {
+          return DateTime.fromMillisecondsSinceEpoch(0, isUtc: true).toLocal();
+        } else {
+          return DateTime.fromMicrosecondsSinceEpoch(
+            value,
+            isUtc: true,
+          ).toLocal();
+        }
+      }
+    case 2:
+      return IsarCore.readLong(reader, 2);
+    case 3:
+      return IsarCore.readBool(reader, 3);
+    default:
+      throw ArgumentError('Unknown property: $property');
+  }
+}
+
+sealed class _TaskLogUpdate {
+  bool call({required int id, DateTime? date, int? taskId, bool? wasCompleted});
+}
+
+class _TaskLogUpdateImpl implements _TaskLogUpdate {
+  const _TaskLogUpdateImpl(this.collection);
+
+  final IsarCollection<int, TaskLog> collection;
+
+  @override
+  bool call({
+    required int id,
+    Object? date = ignore,
+    Object? taskId = ignore,
+    Object? wasCompleted = ignore,
+  }) {
+    return collection.updateProperties(
+          [id],
+          {
+            if (date != ignore) 1: date as DateTime?,
+            if (taskId != ignore) 2: taskId as int?,
+            if (wasCompleted != ignore) 3: wasCompleted as bool?,
+          },
+        ) >
+        0;
+  }
+}
+
+sealed class _TaskLogUpdateAll {
+  int call({
+    required List<int> id,
+    DateTime? date,
+    int? taskId,
+    bool? wasCompleted,
+  });
+}
+
+class _TaskLogUpdateAllImpl implements _TaskLogUpdateAll {
+  const _TaskLogUpdateAllImpl(this.collection);
+
+  final IsarCollection<int, TaskLog> collection;
+
+  @override
+  int call({
+    required List<int> id,
+    Object? date = ignore,
+    Object? taskId = ignore,
+    Object? wasCompleted = ignore,
+  }) {
+    return collection.updateProperties(id, {
+      if (date != ignore) 1: date as DateTime?,
+      if (taskId != ignore) 2: taskId as int?,
+      if (wasCompleted != ignore) 3: wasCompleted as bool?,
+    });
+  }
+}
+
+extension TaskLogUpdate on IsarCollection<int, TaskLog> {
+  _TaskLogUpdate get update => _TaskLogUpdateImpl(this);
+
+  _TaskLogUpdateAll get updateAll => _TaskLogUpdateAllImpl(this);
+}
+
+sealed class _TaskLogQueryUpdate {
+  int call({DateTime? date, int? taskId, bool? wasCompleted});
+}
+
+class _TaskLogQueryUpdateImpl implements _TaskLogQueryUpdate {
+  const _TaskLogQueryUpdateImpl(this.query, {this.limit});
+
+  final IsarQuery<TaskLog> query;
+  final int? limit;
+
+  @override
+  int call({
+    Object? date = ignore,
+    Object? taskId = ignore,
+    Object? wasCompleted = ignore,
+  }) {
+    return query.updateProperties(limit: limit, {
+      if (date != ignore) 1: date as DateTime?,
+      if (taskId != ignore) 2: taskId as int?,
+      if (wasCompleted != ignore) 3: wasCompleted as bool?,
+    });
+  }
+}
+
+extension TaskLogQueryUpdate on IsarQuery<TaskLog> {
+  _TaskLogQueryUpdate get updateFirst =>
+      _TaskLogQueryUpdateImpl(this, limit: 1);
+
+  _TaskLogQueryUpdate get updateAll => _TaskLogQueryUpdateImpl(this);
+}
+
+class _TaskLogQueryBuilderUpdateImpl implements _TaskLogQueryUpdate {
+  const _TaskLogQueryBuilderUpdateImpl(this.query, {this.limit});
+
+  final QueryBuilder<TaskLog, TaskLog, QOperations> query;
+  final int? limit;
+
+  @override
+  int call({
+    Object? date = ignore,
+    Object? taskId = ignore,
+    Object? wasCompleted = ignore,
+  }) {
+    final q = query.build();
+    try {
+      return q.updateProperties(limit: limit, {
+        if (date != ignore) 1: date as DateTime?,
+        if (taskId != ignore) 2: taskId as int?,
+        if (wasCompleted != ignore) 3: wasCompleted as bool?,
+      });
+    } finally {
+      q.close();
+    }
+  }
+}
+
+extension TaskLogQueryBuilderUpdate
+    on QueryBuilder<TaskLog, TaskLog, QOperations> {
+  _TaskLogQueryUpdate get updateFirst =>
+      _TaskLogQueryBuilderUpdateImpl(this, limit: 1);
+
+  _TaskLogQueryUpdate get updateAll => _TaskLogQueryBuilderUpdateImpl(this);
+}
+
+extension TaskLogQueryFilter
+    on QueryBuilder<TaskLog, TaskLog, QFilterCondition> {
+  QueryBuilder<TaskLog, TaskLog, QAfterFilterCondition> idEqualTo(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EqualCondition(property: 0, value: value),
+      );
+    });
+  }
+
+  QueryBuilder<TaskLog, TaskLog, QAfterFilterCondition> idGreaterThan(
+    int value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterCondition(property: 0, value: value),
+      );
+    });
+  }
+
+  QueryBuilder<TaskLog, TaskLog, QAfterFilterCondition> idGreaterThanOrEqualTo(
+    int value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterOrEqualCondition(property: 0, value: value),
+      );
+    });
+  }
+
+  QueryBuilder<TaskLog, TaskLog, QAfterFilterCondition> idLessThan(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(LessCondition(property: 0, value: value));
+    });
+  }
+
+  QueryBuilder<TaskLog, TaskLog, QAfterFilterCondition> idLessThanOrEqualTo(
+    int value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessOrEqualCondition(property: 0, value: value),
+      );
+    });
+  }
+
+  QueryBuilder<TaskLog, TaskLog, QAfterFilterCondition> idBetween(
+    int lower,
+    int upper,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        BetweenCondition(property: 0, lower: lower, upper: upper),
+      );
+    });
+  }
+
+  QueryBuilder<TaskLog, TaskLog, QAfterFilterCondition> dateEqualTo(
+    DateTime value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EqualCondition(property: 1, value: value),
+      );
+    });
+  }
+
+  QueryBuilder<TaskLog, TaskLog, QAfterFilterCondition> dateGreaterThan(
+    DateTime value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterCondition(property: 1, value: value),
+      );
+    });
+  }
+
+  QueryBuilder<TaskLog, TaskLog, QAfterFilterCondition>
+  dateGreaterThanOrEqualTo(DateTime value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterOrEqualCondition(property: 1, value: value),
+      );
+    });
+  }
+
+  QueryBuilder<TaskLog, TaskLog, QAfterFilterCondition> dateLessThan(
+    DateTime value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(LessCondition(property: 1, value: value));
+    });
+  }
+
+  QueryBuilder<TaskLog, TaskLog, QAfterFilterCondition> dateLessThanOrEqualTo(
+    DateTime value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessOrEqualCondition(property: 1, value: value),
+      );
+    });
+  }
+
+  QueryBuilder<TaskLog, TaskLog, QAfterFilterCondition> dateBetween(
+    DateTime lower,
+    DateTime upper,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        BetweenCondition(property: 1, lower: lower, upper: upper),
+      );
+    });
+  }
+
+  QueryBuilder<TaskLog, TaskLog, QAfterFilterCondition> taskIdEqualTo(
+    int value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EqualCondition(property: 2, value: value),
+      );
+    });
+  }
+
+  QueryBuilder<TaskLog, TaskLog, QAfterFilterCondition> taskIdGreaterThan(
+    int value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterCondition(property: 2, value: value),
+      );
+    });
+  }
+
+  QueryBuilder<TaskLog, TaskLog, QAfterFilterCondition>
+  taskIdGreaterThanOrEqualTo(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterOrEqualCondition(property: 2, value: value),
+      );
+    });
+  }
+
+  QueryBuilder<TaskLog, TaskLog, QAfterFilterCondition> taskIdLessThan(
+    int value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(LessCondition(property: 2, value: value));
+    });
+  }
+
+  QueryBuilder<TaskLog, TaskLog, QAfterFilterCondition> taskIdLessThanOrEqualTo(
+    int value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessOrEqualCondition(property: 2, value: value),
+      );
+    });
+  }
+
+  QueryBuilder<TaskLog, TaskLog, QAfterFilterCondition> taskIdBetween(
+    int lower,
+    int upper,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        BetweenCondition(property: 2, lower: lower, upper: upper),
+      );
+    });
+  }
+
+  QueryBuilder<TaskLog, TaskLog, QAfterFilterCondition> wasCompletedEqualTo(
+    bool value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EqualCondition(property: 3, value: value),
+      );
+    });
+  }
+}
+
+extension TaskLogQueryObject
+    on QueryBuilder<TaskLog, TaskLog, QFilterCondition> {}
+
+extension TaskLogQuerySortBy on QueryBuilder<TaskLog, TaskLog, QSortBy> {
+  QueryBuilder<TaskLog, TaskLog, QAfterSortBy> sortById() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(0);
+    });
+  }
+
+  QueryBuilder<TaskLog, TaskLog, QAfterSortBy> sortByIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(0, sort: Sort.desc);
+    });
+  }
+
+  QueryBuilder<TaskLog, TaskLog, QAfterSortBy> sortByDate() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(1);
+    });
+  }
+
+  QueryBuilder<TaskLog, TaskLog, QAfterSortBy> sortByDateDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(1, sort: Sort.desc);
+    });
+  }
+
+  QueryBuilder<TaskLog, TaskLog, QAfterSortBy> sortByTaskId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(2);
+    });
+  }
+
+  QueryBuilder<TaskLog, TaskLog, QAfterSortBy> sortByTaskIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(2, sort: Sort.desc);
+    });
+  }
+
+  QueryBuilder<TaskLog, TaskLog, QAfterSortBy> sortByWasCompleted() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(3);
+    });
+  }
+
+  QueryBuilder<TaskLog, TaskLog, QAfterSortBy> sortByWasCompletedDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(3, sort: Sort.desc);
+    });
+  }
+}
+
+extension TaskLogQuerySortThenBy
+    on QueryBuilder<TaskLog, TaskLog, QSortThenBy> {
+  QueryBuilder<TaskLog, TaskLog, QAfterSortBy> thenById() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(0);
+    });
+  }
+
+  QueryBuilder<TaskLog, TaskLog, QAfterSortBy> thenByIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(0, sort: Sort.desc);
+    });
+  }
+
+  QueryBuilder<TaskLog, TaskLog, QAfterSortBy> thenByDate() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(1);
+    });
+  }
+
+  QueryBuilder<TaskLog, TaskLog, QAfterSortBy> thenByDateDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(1, sort: Sort.desc);
+    });
+  }
+
+  QueryBuilder<TaskLog, TaskLog, QAfterSortBy> thenByTaskId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(2);
+    });
+  }
+
+  QueryBuilder<TaskLog, TaskLog, QAfterSortBy> thenByTaskIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(2, sort: Sort.desc);
+    });
+  }
+
+  QueryBuilder<TaskLog, TaskLog, QAfterSortBy> thenByWasCompleted() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(3);
+    });
+  }
+
+  QueryBuilder<TaskLog, TaskLog, QAfterSortBy> thenByWasCompletedDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(3, sort: Sort.desc);
+    });
+  }
+}
+
+extension TaskLogQueryWhereDistinct
+    on QueryBuilder<TaskLog, TaskLog, QDistinct> {
+  QueryBuilder<TaskLog, TaskLog, QAfterDistinct> distinctByDate() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(1);
+    });
+  }
+
+  QueryBuilder<TaskLog, TaskLog, QAfterDistinct> distinctByTaskId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(2);
+    });
+  }
+
+  QueryBuilder<TaskLog, TaskLog, QAfterDistinct> distinctByWasCompleted() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(3);
+    });
+  }
+}
+
+extension TaskLogQueryProperty1 on QueryBuilder<TaskLog, TaskLog, QProperty> {
+  QueryBuilder<TaskLog, int, QAfterProperty> idProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(0);
+    });
+  }
+
+  QueryBuilder<TaskLog, DateTime, QAfterProperty> dateProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(1);
+    });
+  }
+
+  QueryBuilder<TaskLog, int, QAfterProperty> taskIdProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(2);
+    });
+  }
+
+  QueryBuilder<TaskLog, bool, QAfterProperty> wasCompletedProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(3);
+    });
+  }
+}
+
+extension TaskLogQueryProperty2<R> on QueryBuilder<TaskLog, R, QAfterProperty> {
+  QueryBuilder<TaskLog, (R, int), QAfterProperty> idProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(0);
+    });
+  }
+
+  QueryBuilder<TaskLog, (R, DateTime), QAfterProperty> dateProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(1);
+    });
+  }
+
+  QueryBuilder<TaskLog, (R, int), QAfterProperty> taskIdProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(2);
+    });
+  }
+
+  QueryBuilder<TaskLog, (R, bool), QAfterProperty> wasCompletedProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(3);
+    });
+  }
+}
+
+extension TaskLogQueryProperty3<R1, R2>
+    on QueryBuilder<TaskLog, (R1, R2), QAfterProperty> {
+  QueryBuilder<TaskLog, (R1, R2, int), QOperations> idProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(0);
+    });
+  }
+
+  QueryBuilder<TaskLog, (R1, R2, DateTime), QOperations> dateProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(1);
+    });
+  }
+
+  QueryBuilder<TaskLog, (R1, R2, int), QOperations> taskIdProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(2);
+    });
+  }
+
+  QueryBuilder<TaskLog, (R1, R2, bool), QOperations> wasCompletedProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(3);
+    });
+  }
+}
