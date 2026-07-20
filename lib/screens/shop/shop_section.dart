@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../models/mushroom_type.dart';
+import '../../data/mushroom_catalog.dart';
+import '../../data/user_repository.dart' show PurchaseResult;
 import '../../providers/economy_provider.dart';
-import '../../services/economy_service.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/shop_item_card.dart';
 
@@ -13,7 +13,8 @@ class ShopSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final mushrooms = ref.watch(shopMushroomsProvider).value ?? [];
+    final mushrooms = ref.watch(shopMushroomsProvider);
+    final ownedIds = ref.watch(ownedMushroomIdsProvider).value ?? const [];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -29,7 +30,8 @@ class ShopSection extends ConsumerWidget {
                       padding: const EdgeInsets.only(right: AppSizes.gap),
                       child: ShopItemCard(
                         mushroom: m,
-                        onTap: () => _onBuy(context, ref, m),
+                        isOwned: ownedIds.contains(m.id),
+                        onTap: () => _onBuy(context, ref, m, ownedIds.contains(m.id)),
                       ),
                     ))
                 .toList(),
@@ -39,8 +41,13 @@ class ShopSection extends ConsumerWidget {
     );
   }
 
-  Future<void> _onBuy(BuildContext context, WidgetRef ref, MushroomType mushroom) async {
-    if (mushroom.isOwned) {
+  Future<void> _onBuy(
+    BuildContext context,
+    WidgetRef ref,
+    MushroomCatalogItem mushroom,
+    bool isOwned,
+  ) async {
+    if (isOwned) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('${mushroom.name} zaten sizin bahçenizde büyüyebilir!')),
       );

@@ -1,16 +1,15 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../models/tag.dart';
-import '../services/tag_service.dart';
-import 'isar_provider.dart';
+import '../data/models/tag.dart';
+import '../data/tag_repository.dart';
+import 'auth_provider.dart';
 
-/// Kullanılabilir etiketler; yeni etiket eklendiğinde otomatik günceller.
-final tagsProvider = StreamProvider<List<Tag>>((ref) async* {
-  final isar = await ref.watch(isarProvider.future);
-  yield TagService.getAll(isar);
-  await for (final _ in isar.tags.watchLazy()) {
-    yield TagService.getAll(isar);
-  }
+/// Kullanılabilir etiketler. Firestore `.snapshots()` zaten canlı akış
+/// olduğu için elle invalidate gerekmez.
+final tagsProvider = StreamProvider<List<Tag>>((ref) {
+  final uid = ref.watch(currentUidProvider);
+  if (uid == null) return const Stream.empty();
+  return TagRepository().watchTags(uid);
 });
 
 final tagNotifierProvider = NotifierProvider<TagNotifier, void>(TagNotifier.new);
@@ -19,8 +18,16 @@ class TagNotifier extends Notifier<void> {
   @override
   void build() {}
 
-  Future<Tag> create(String name) async {
-    final isar = await ref.read(isarProvider.future);
-    return TagService.createIfAbsent(isar, name);
+  Future<Tag?> create(String name) async {
+    final uid = ref.read(currentUidProvider);
+    if (uid == null) return null;
+    final currentCount = ref.read(tagsProvider).value?.length ?? 0;
+    return TagRepository().createIfAbsent(uid, name, currentTagCount: currentCount);
+  }
+
+  Future<void> delete(String tagId) async {
+    final uid = ref.read(currentUidProvider);
+    if (uid == null) return;
+    await TagRepository().deleteTag(uid, tagId);
   }
 }

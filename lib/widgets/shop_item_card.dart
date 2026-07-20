@@ -1,22 +1,27 @@
 import 'package:flutter/material.dart';
 
-import '../models/mushroom_type.dart';
+import '../data/mushroom_catalog.dart';
 import '../theme/app_theme.dart';
 
 /// Tek bir mağaza kartı: mantar görseli + fiyat (veya "Sahip" rozeti).
 /// Sadece verilen [mushroom] verisini gösterir, satın alma mantığı içermez.
 class ShopItemCard extends StatelessWidget {
-  final MushroomType mushroom;
+  final MushroomCatalogItem mushroom;
+  final bool isOwned;
   final VoidCallback onTap;
 
-  const ShopItemCard({super.key, required this.mushroom, required this.onTap});
+  const ShopItemCard({
+    super.key,
+    required this.mushroom,
+    required this.isOwned,
+    required this.onTap,
+  });
 
   Color _getTierColor(MushroomTier tier) {
     return switch (tier) {
       MushroomTier.starter => AppColors.tabUnselectedText,
       MushroomTier.common => AppColors.shopIconCommon,
       MushroomTier.rare => AppColors.shopIconRare,
-      MushroomTier.epic => Colors.purple,
       MushroomTier.legendary => AppColors.shopIconLegendary,
     };
   }
@@ -26,7 +31,6 @@ class ShopItemCard extends StatelessWidget {
       MushroomTier.starter => 'Başlangıç',
       MushroomTier.common => 'Yaygın',
       MushroomTier.rare => 'Nadir',
-      MushroomTier.epic => 'Destansı',
       MushroomTier.legendary => 'Efsanevi',
     };
   }
@@ -46,13 +50,13 @@ class ShopItemCard extends StatelessWidget {
           color: AppColors.cardBackground,
           borderRadius: BorderRadius.circular(AppSizes.shopItemRadius),
           border: Border.all(
-            color: mushroom.isOwned ? AppColors.chipUnselectedBorder : tierColor.withOpacity(0.5),
-            width: mushroom.isOwned ? 1 : 2,
+            color: isOwned ? AppColors.chipUnselectedBorder : tierColor.withOpacity(0.5),
+            width: isOwned ? 1 : 2,
           ),
           boxShadow: [
             BoxShadow(
-              color: tierColor.withOpacity(mushroom.isOwned ? 0.04 : 0.1),
-              blurRadius: mushroom.isOwned ? 4 : 8,
+              color: tierColor.withOpacity(isOwned ? 0.04 : 0.1),
+              blurRadius: isOwned ? 4 : 8,
               offset: const Offset(0, 4),
             ),
           ],
@@ -96,7 +100,7 @@ class ShopItemCard extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             // Pricing or Ownership status
-            mushroom.isOwned
+            isOwned
                 ? Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [

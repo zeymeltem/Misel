@@ -12,8 +12,8 @@ class DailyFocusChart extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final stats = ref.watch(weeklyStatsProvider).value;
-    final daily = stats?.dailyFocus ?? const [];
+    final stats = ref.watch(weeklyStatsProvider);
+    final daily = stats.dailyFocus;
     final maxMinutes = daily.fold<int>(1, (m, d) => d.minutes > m ? d.minutes : m);
     final today = DateTime.now();
 
@@ -37,18 +37,12 @@ class DailyFocusChart extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Günlük Odak Süresi',
-                style: AppTextStyles.fieldLabel.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.taskTitle,
-                ),
-              ),
-              const Icon(Icons.bar_chart_rounded, size: 18, color: AppColors.tabUnselectedText),
-            ],
+          Text(
+            'Bu Hafta (dk)',
+            style: AppTextStyles.fieldLabel.copyWith(
+              fontWeight: FontWeight.bold,
+              color: AppColors.taskTitle,
+            ),
           ),
           const SizedBox(height: 20),
           SizedBox(

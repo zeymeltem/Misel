@@ -2,13 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/tag_provider.dart';
+import '../screens/tags/tag_management_screen.dart';
 import '../theme/app_theme.dart';
 
 /// Etiket seçici: mevcut etiketleri chip olarak listeler, seçileni işaretler
 /// ve yeni etiket eklemeyi sağlar. Seçim [onChanged] ile üst widget'a bildirilir.
+/// "Yönet" butonu etiket arama/oluşturma/silme ekranını açar.
 class TagSelector extends ConsumerWidget {
-  final int? selectedTagId;
-  final ValueChanged<int?> onChanged;
+  final String? selectedTagId;
+  final ValueChanged<String?> onChanged;
 
   const TagSelector({super.key, required this.selectedTagId, required this.onChanged});
 
@@ -16,18 +18,37 @@ class TagSelector extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final tags = ref.watch(tagsProvider).value ?? [];
 
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        for (final tag in tags)
-          _TagChip(
-            label: tag.name,
-            selected: tag.id == selectedTagId,
-            color: AppColors.tagPalette[tag.colorIndex % AppColors.tagPalette.length],
-            onTap: () => onChanged(tag.id == selectedTagId ? null : tag.id),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final tag in tags)
+              _TagChip(
+                label: tag.name,
+                selected: tag.id == selectedTagId,
+                color: AppColors.tagPalette[tag.colorIndex % AppColors.tagPalette.length],
+                onTap: () => onChanged(tag.id == selectedTagId ? null : tag.id),
+              ),
+            _AddTagChip(onCreated: (id) => onChanged(id)),
+          ],
+        ),
+        const SizedBox(height: 8),
+        TextButton.icon(
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (context) => const TagManagementScreen()),
           ),
-        _AddTagChip(onCreated: (id) => onChanged(id)),
+          icon: const Icon(Icons.settings_outlined, size: 16),
+          label: const Text('Etiketleri Yönet'),
+          style: TextButton.styleFrom(
+            padding: EdgeInsets.zero,
+            minimumSize: const Size(0, 0),
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            foregroundColor: AppColors.tabUnselectedText,
+          ),
+        ),
       ],
     );
   }
@@ -88,7 +109,7 @@ class _TagChip extends StatelessWidget {
 }
 
 class _AddTagChip extends ConsumerWidget {
-  final ValueChanged<int> onCreated;
+  final ValueChanged<String> onCreated;
   const _AddTagChip({required this.onCreated});
 
   @override
@@ -106,7 +127,7 @@ class _AddTagChip extends ConsumerWidget {
         }
         try {
           final tag = await ref.read(tagNotifierProvider.notifier).create(name);
-          onCreated(tag.id);
+          if (tag != null) onCreated(tag.id);
         } catch (e) {
           if (!context.mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(

@@ -10,7 +10,7 @@ class TagDistributionBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final shares = ref.watch(weeklyStatsProvider).value?.tagShares ?? const [];
+    final shares = ref.watch(weeklyStatsProvider).tagShares;
 
     return Container(
       padding: const EdgeInsets.all(18),

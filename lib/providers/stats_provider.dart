@@ -1,36 +1,31 @@
-import 'dart:async';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../models/session.dart';
-import '../models/tag.dart';
-import '../models/task_log.dart';
-import '../services/economy_service.dart';
+import '../data/user_repository.dart';
 import '../services/stats_service.dart';
-import 'isar_provider.dart';
+import 'auth_provider.dart';
+import 'session_provider.dart';
+import 'tag_provider.dart';
+import 'task_provider.dart';
 
-/// Haftalık odak/başarı/etiket/görev istatistikleri; ilgili koleksiyonlardan
-/// biri değişince yeniden hesaplanır.
-final weeklyStatsProvider = StreamProvider<WeeklyStats>((ref) async* {
-  final isar = await ref.watch(isarProvider.future);
-  yield StatsService.getWeeklyStats(isar);
+/// Haftalık odak/başarı/etiket/görev istatistikleri; sessions/tags/taskLogs
+/// akışlarından saf fonksiyonla türetilir, elle invalidate gerekmez.
+final weeklyStatsProvider = Provider<WeeklyStats>((ref) {
+  final sessions = ref.watch(sessionsProvider).value ?? [];
+  final tags = ref.watch(tagsProvider).value ?? [];
+  final taskLogs = ref.watch(taskLogsProvider).value ?? [];
+  return StatsService.getWeeklyStats(sessions, tags, taskLogs);
+});
 
-  final changes = StreamController<void>();
-  final subs = [
-    isar.sessions.watchLazy().listen(changes.add),
-    isar.tags.watchLazy().listen(changes.add),
-    isar.taskLogs.watchLazy().listen(changes.add),
-  ];
-  ref.onDispose(() {
-    for (final s in subs) {
-      s.cancel();
-    }
-    changes.close();
-  });
+/// Tüm zamanların toplam odak süresi.
+final totalFocusTimeProvider = Provider<Duration>((ref) {
+  final sessions = ref.watch(sessionsProvider).value ?? [];
+  return StatsService.getTotalFocusTime(sessions);
+});
 
-  await for (final _ in changes.stream) {
-    yield StatsService.getWeeklyStats(isar);
-  }
+/// Geçmişte belirli bir günün toplam odak süresi (gün detayı ekranı için).
+final focusMinutesForDateProvider = Provider.family<Duration, DateTime>((ref, date) {
+  final sessions = ref.watch(sessionsProvider).value ?? [];
+  return StatsService.getFocusMinutesForDate(sessions, date);
 });
 
 final profileNotifierProvider =
@@ -40,8 +35,14 @@ class ProfileNotifier extends Notifier<void> {
   @override
   void build() {}
 
-  Future<void> rename(String name) async {
-    final isar = await ref.read(isarProvider.future);
-    EconomyService.setDisplayName(isar, name);
+  Future<void> updateProfile(String name, String username, int dailyGoalMinutes) async {
+    final uid = ref.read(currentUidProvider);
+    if (uid == null) return;
+    await UserRepository().updateProfile(
+      uid,
+      name: name,
+      username: username,
+      dailyGoalMinutes: dailyGoalMinutes,
+    );
   }
 }

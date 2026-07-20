@@ -28,13 +28,11 @@ extension GrowthStageX on GrowthStage {
 
 class MushroomGrowthRing extends StatelessWidget {
   final double progress;
-  final String centerTime;
   final String? mushroomSprite;
 
   const MushroomGrowthRing({
     super.key,
     required this.progress,
-    required this.centerTime,
     this.mushroomSprite,
   });
 
@@ -102,16 +100,6 @@ class MushroomGrowthRing extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 12),
-              // Countdown Timer
-              Text(
-                centerTime,
-                style: AppTextStyles.durationValue.copyWith(
-                  fontSize: 38,
-                  height: 1.0,
-                  letterSpacing: 1.0,
-                ),
-              ),
-              const SizedBox(height: 6),
               // Growth stage badge
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),

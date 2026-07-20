@@ -18,7 +18,7 @@ abstract final class AppColors {
   static const shopIconRare = Color(0xFFE8759A);
   static const shopIconLegendary = Color(0xFF4A7FE0);
 
-  static const streakText = Color(0xFFD97706);
+  static const streakText = Color(0xFFFF6B4A);
   static const coinPreviewText = Color(0xFF4C7A3D);
   static const sliderTrack = Color(0xFF1F2421);
 
@@ -46,8 +46,8 @@ abstract final class AppColors {
   static const statValueText = Color(0xFF1F2421);
   static const avatarBg = Color(0xFFDCEBFA);
   static const avatarText = Color(0xFF2563EB);
-  static const chartBarBg = Color(0xFFBFE0C7);
-  static const chartBarActive = Color(0xFF2F9E52);
+  static const chartBarBg = Color(0xFFE6DCD3);
+  static const chartBarActive = Color(0xFFFF6B4A);
   static const progressTrackBg = Color(0xFFE4E7DE);
   static const progressFill = Color(0xFF6FCF87);
 
@@ -144,10 +144,13 @@ abstract final class AppSizes {
   static const ringSize = 240.0;
 
   static const statCardRadius = 16.0;
-  static const avatarSize = 48.0;
+  static const avatarSize = 96.0;
+  static const taskRingSize = 96.0;
   static const chartHeight = 120.0;
   static const barWidth = 18.0;
   static const progressBarHeight = 8.0;
+
+  static const gardenCellSize = 64.0;
 }
 
 ThemeData buildAppTheme() {

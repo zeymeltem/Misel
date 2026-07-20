@@ -1,0 +1,26 @@
+rules_version = '2';
+
+// Mantar Odak — Firestore güvenlik kuralları.
+//
+// Nasıl yüklenir (CLI kurulu değil, Console üzerinden):
+// 1. https://console.firebase.google.com → projeni aç.
+// 2. Sol menüden Firestore Database → üstteki "Rules" sekmesi.
+// 3. Aşağıdaki içeriğin tamamını kopyala, editördeki mevcut içeriğin
+//    üzerine yapıştır.
+// 4. Sağ üstteki "Publish" butonuna bas.
+//
+// Kural: her kullanıcı SADECE kendi uid'si altındaki
+// users/{uid}/... verisine erişebilir (tüm alt koleksiyonlar dahil:
+// sessions, tags, tasks, taskLogs, ownedMushrooms). Başka bir kullanıcının
+// verisine ne okuma ne yazma erişimi vardır.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+
+      match /{document=**} {
+        allow read, write: if request.auth != null && request.auth.uid == uid;
+      }
+    }
+  }
+}

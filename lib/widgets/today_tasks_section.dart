@@ -6,12 +6,17 @@ import '../services/task_service.dart';
 import '../theme/app_theme.dart';
 
 /// "Bugün görevleri": günlük rutinler + tek seferlik görevler, işaretlenebilir.
+///
+/// [readOnly]: seans sırasında dikkat dağıtmaması için sadece işaretleme
+/// kalır — ekleme/düzenleme/silme gizlenir (bkz. [TimerScreen]'in idle vs
+/// aktif ekranları).
 class TodayTasksSection extends ConsumerWidget {
-  const TodayTasksSection({super.key});
+  final bool readOnly;
+  const TodayTasksSection({super.key, this.readOnly = false});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final tasks = ref.watch(todayTasksProvider).value ?? [];
+    final tasks = ref.watch(todayTasksProvider);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -53,19 +58,67 @@ class TodayTasksSection extends ConsumerWidget {
             ),
           ),
         for (final task in tasks) ...[
-          _TaskRow(task: task),
+          if (readOnly)
+            _TaskRow(task: task, readOnly: true)
+          else
+            Dismissible(
+              key: ValueKey('task-${task.id}'),
+              direction: DismissDirection.endToStart,
+              confirmDismiss: (_) => _confirmDelete(context),
+              onDismissed: (_) => ref.read(taskNotifierProvider.notifier).delete(task.id),
+              background: Container(
+                alignment: Alignment.centerRight,
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                decoration: BoxDecoration(
+                  color: Colors.redAccent,
+                  borderRadius: BorderRadius.circular(AppSizes.taskCardRadius),
+                ),
+                child: const Icon(Icons.delete_outline, color: Colors.white),
+              ),
+              child: _TaskRow(task: task),
+            ),
           const SizedBox(height: 8),
         ],
-        const SizedBox(height: 4),
-        _AddTaskButton(),
+        if (!readOnly) ...[
+          const SizedBox(height: 4),
+          _AddTaskButton(),
+        ],
       ],
     );
   }
 }
 
+/// Sağa kaydırma ile silme öncesi onay penceresi. Kullanıcı "Sil" demezse
+/// görev listede kalır (Dismissible geri kayar).
+Future<bool> _confirmDelete(BuildContext context) async {
+  final confirm = await showDialog<bool>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('Görevi Sil?'),
+      content: const Text(
+        'Bu görev ve tamamlanma geçmişi kalıcı olarak silinecek.',
+        style: TextStyle(fontSize: 14),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: const Text('Vazgeç'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(context).pop(true),
+          style: FilledButton.styleFrom(backgroundColor: Colors.redAccent),
+          child: const Text('Sil'),
+        ),
+      ],
+    ),
+  );
+  return confirm ?? false;
+}
+
 class _TaskRow extends ConsumerWidget {
   final TaskItem task;
-  const _TaskRow({required this.task});
+  final bool readOnly;
+  const _TaskRow({required this.task, this.readOnly = false});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -117,11 +170,71 @@ class _TaskRow extends ConsumerWidget {
                 child: const Text('rutin', style: AppTextStyles.routineBadge),
               ),
             ],
+            if (!readOnly) ...[
+              const SizedBox(width: 4),
+              IconButton(
+                onPressed: () => _showEditTaskDialog(context, ref, task),
+                icon: const Icon(Icons.edit_outlined, size: 18, color: AppColors.tabUnselectedText),
+                visualDensity: VisualDensity.compact,
+                constraints: const BoxConstraints(),
+                padding: const EdgeInsets.all(4),
+              ),
+            ],
           ],
         ),
       ),
     );
   }
+}
+
+Future<void> _showEditTaskDialog(BuildContext context, WidgetRef ref, TaskItem task) async {
+  final controller = TextEditingController(text: task.title);
+  var isRoutine = task.isRoutine;
+
+  final result = await showDialog<(String, bool)>(
+    context: context,
+    builder: (context) => StatefulBuilder(
+      builder: (context, setState) => AlertDialog(
+        title: const Text('Görevi Düzenle'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: controller,
+              autofocus: true,
+              decoration: const InputDecoration(
+                hintText: 'Örn. Matematik ödevi',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 8),
+            CheckboxListTile(
+              value: isRoutine,
+              onChanged: (v) => setState(() => isRoutine = v ?? false),
+              title: const Text('Her gün tekrarlansın (Rutin)', style: TextStyle(fontSize: 14)),
+              contentPadding: EdgeInsets.zero,
+              controlAffinity: ListTileControlAffinity.leading,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Vazgeç'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop((controller.text, isRoutine)),
+            child: const Text('Kaydet'),
+          ),
+        ],
+      ),
+    ),
+  );
+
+  if (result == null || result.$1.trim().isEmpty) return;
+  await ref
+      .read(taskNotifierProvider.notifier)
+      .edit(task.id, result.$1, isRoutine: result.$2);
 }
 
 class _Checkbox extends StatelessWidget {

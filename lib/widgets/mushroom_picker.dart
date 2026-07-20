@@ -7,14 +7,14 @@ import '../theme/app_theme.dart';
 /// Seans boyunca büyütülecek mantarı seçmek için sahip olunan mantarları
 /// gösterir. Seçim [onChanged] ile üst widget'a bildirilir.
 class MushroomPicker extends ConsumerWidget {
-  final int? selectedId;
-  final ValueChanged<int> onChanged;
+  final String? selectedId;
+  final ValueChanged<String> onChanged;
 
   const MushroomPicker({super.key, required this.selectedId, required this.onChanged});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final owned = ref.watch(ownedMushroomsProvider).value ?? [];
+    final owned = ref.watch(ownedMushroomsProvider);
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
