@@ -62,6 +62,9 @@ class SettingsNotifier extends Notifier<void> {
   Future<void> updateSettings({
     required bool notificationsEnabled,
     required int defaultSessionMinutes,
+    required bool dailyReminderEnabled,
+    required int dailyReminderHour,
+    required int dailyReminderMinute,
   }) async {
     final uid = ref.read(currentUidProvider);
     if (uid == null) return;
@@ -69,6 +72,9 @@ class SettingsNotifier extends Notifier<void> {
       uid,
       notificationsEnabled: notificationsEnabled,
       defaultSessionMinutes: defaultSessionMinutes,
+      dailyReminderEnabled: dailyReminderEnabled,
+      dailyReminderHour: dailyReminderHour,
+      dailyReminderMinute: dailyReminderMinute,
     );
   }
 }

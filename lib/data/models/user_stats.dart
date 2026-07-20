@@ -13,6 +13,9 @@ class UserStats {
   final String? selectedMushroomTypeId;
   final bool notificationsEnabled;
   final int defaultSessionMinutes;
+  final bool dailyReminderEnabled;
+  final int dailyReminderHour;
+  final int dailyReminderMinute;
 
   const UserStats({
     this.displayName,
@@ -26,6 +29,9 @@ class UserStats {
     this.selectedMushroomTypeId,
     this.notificationsEnabled = true,
     this.defaultSessionMinutes = 25,
+    this.dailyReminderEnabled = true,
+    this.dailyReminderHour = 20,
+    this.dailyReminderMinute = 0,
   });
 
   factory UserStats.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
@@ -43,6 +49,9 @@ class UserStats {
       selectedMushroomTypeId: data['selectedMushroomTypeId'] as String?,
       notificationsEnabled: data['notificationsEnabled'] as bool? ?? true,
       defaultSessionMinutes: data['defaultSessionMinutes'] as int? ?? 25,
+      dailyReminderEnabled: data['dailyReminderEnabled'] as bool? ?? true,
+      dailyReminderHour: data['dailyReminderHour'] as int? ?? 20,
+      dailyReminderMinute: data['dailyReminderMinute'] as int? ?? 0,
     );
   }
 
@@ -58,6 +67,9 @@ class UserStats {
         'selectedMushroomTypeId': selectedMushroomTypeId,
         'notificationsEnabled': notificationsEnabled,
         'defaultSessionMinutes': defaultSessionMinutes,
+        'dailyReminderEnabled': dailyReminderEnabled,
+        'dailyReminderHour': dailyReminderHour,
+        'dailyReminderMinute': dailyReminderMinute,
       };
 
   UserStats copyWith({
@@ -72,6 +84,9 @@ class UserStats {
     String? selectedMushroomTypeId,
     bool? notificationsEnabled,
     int? defaultSessionMinutes,
+    bool? dailyReminderEnabled,
+    int? dailyReminderHour,
+    int? dailyReminderMinute,
   }) {
     return UserStats(
       displayName: displayName ?? this.displayName,
@@ -85,6 +100,9 @@ class UserStats {
       selectedMushroomTypeId: selectedMushroomTypeId ?? this.selectedMushroomTypeId,
       notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
       defaultSessionMinutes: defaultSessionMinutes ?? this.defaultSessionMinutes,
+      dailyReminderEnabled: dailyReminderEnabled ?? this.dailyReminderEnabled,
+      dailyReminderHour: dailyReminderHour ?? this.dailyReminderHour,
+      dailyReminderMinute: dailyReminderMinute ?? this.dailyReminderMinute,
     );
   }
 }

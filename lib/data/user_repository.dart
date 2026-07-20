@@ -89,10 +89,16 @@ class UserRepository {
     String uid, {
     required bool notificationsEnabled,
     required int defaultSessionMinutes,
+    required bool dailyReminderEnabled,
+    required int dailyReminderHour,
+    required int dailyReminderMinute,
   }) async {
     await _userDoc(uid).set({
       'notificationsEnabled': notificationsEnabled,
       'defaultSessionMinutes': defaultSessionMinutes,
+      'dailyReminderEnabled': dailyReminderEnabled,
+      'dailyReminderHour': dailyReminderHour,
+      'dailyReminderMinute': dailyReminderMinute,
     }, SetOptions(merge: true));
   }
 

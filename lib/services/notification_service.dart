@@ -11,6 +11,7 @@ class NotificationService {
   bool _initialized = false;
 
   static const _sessionEndNotificationId = 1;
+  static const _dailyReminderNotificationId = 2;
 
   /// Bildirim izni reddedilse veya platform eklentisi kullanılamasa bile
   /// uygulamanın geri kalanı çalışmaya devam etmeli; bu yüzden hata yutulur.
@@ -61,5 +62,46 @@ class NotificationService {
   Future<void> cancelSessionEnd() async {
     if (!_initialized) return;
     await _plugin.cancel(id: _sessionEndNotificationId);
+  }
+
+  /// Her gün [hour]:[minute]'de tekrar eden seri (streak) hatırlatması kurar.
+  /// `matchDateTimeComponents: time` sayesinde tek kurulum yeterli — plugin
+  /// kendisi her gün aynı saatte yeniden tetikler, gün gün elle kurmaya
+  /// gerek yok. Aynı id ile tekrar çağrılması önceki kurulumun üzerine yazar.
+  Future<void> scheduleDailyReminder({
+    required int hour,
+    required int minute,
+    bool skipToday = false,
+  }) async {
+    if (kIsWeb || !_initialized) return;
+
+    final now = tz.TZDateTime.now(tz.local);
+    var next = tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
+    if (skipToday || !next.isAfter(now)) {
+      next = next.add(const Duration(days: 1));
+    }
+
+    await _plugin.zonedSchedule(
+      id: _dailyReminderNotificationId,
+      title: 'Serini kaybetme!',
+      body: 'Bugün henüz odaklanmadın. Kısa bir seansla mantarını büyütmeye devam et.',
+      scheduledDate: next,
+      notificationDetails: const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'daily_reminder',
+          'Günlük hatırlatma',
+          importance: Importance.defaultImportance,
+          priority: Priority.defaultPriority,
+        ),
+        iOS: DarwinNotificationDetails(),
+      ),
+      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      matchDateTimeComponents: DateTimeComponents.time,
+    );
+  }
+
+  Future<void> cancelDailyReminder() async {
+    if (!_initialized) return;
+    await _plugin.cancel(id: _dailyReminderNotificationId);
   }
 }

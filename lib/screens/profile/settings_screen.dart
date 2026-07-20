@@ -15,12 +15,34 @@ class SettingsScreen extends ConsumerWidget {
     final stats = ref.watch(userStatsProvider).value;
     final notificationsEnabled = stats?.notificationsEnabled ?? true;
     final defaultMinutes = stats?.defaultSessionMinutes ?? 25;
+    final reminderEnabled = stats?.dailyReminderEnabled ?? true;
+    final reminderHour = stats?.dailyReminderHour ?? 20;
+    final reminderMinute = stats?.dailyReminderMinute ?? 0;
 
-    void save({bool? notifications, int? minutes}) {
+    void save({
+      bool? notifications,
+      int? minutes,
+      bool? reminderOn,
+      int? hour,
+      int? minute,
+    }) {
       ref.read(settingsNotifierProvider.notifier).updateSettings(
             notificationsEnabled: notifications ?? notificationsEnabled,
             defaultSessionMinutes: minutes ?? defaultMinutes,
+            dailyReminderEnabled: reminderOn ?? reminderEnabled,
+            dailyReminderHour: hour ?? reminderHour,
+            dailyReminderMinute: minute ?? reminderMinute,
           );
+    }
+
+    Future<void> pickReminderTime() async {
+      final picked = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay(hour: reminderHour, minute: reminderMinute),
+      );
+      if (picked != null) {
+        save(hour: picked.hour, minute: picked.minute);
+      }
     }
 
     return Scaffold(
@@ -88,6 +110,36 @@ class SettingsScreen extends ConsumerWidget {
                             onChanged: (value) => save(minutes: value.round()),
                           ),
                         ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Text('Seri Hatırlatması', style: AppTextStyles.sectionTitle.copyWith(fontSize: 18)),
+                  const SizedBox(height: 12),
+                  _SettingsCard(
+                    child: Column(
+                      children: [
+                        SwitchListTile(
+                          contentPadding: EdgeInsets.zero,
+                          title: const Text('Günlük hatırlatma', style: AppTextStyles.taskTitle),
+                          subtitle: Text(
+                            'O gün henüz odaklanmadıysan serini kaybetmemen için hatırlatılır.',
+                            style: AppTextStyles.legend,
+                          ),
+                          value: reminderEnabled,
+                          activeThumbColor: AppColors.tabSelectedBg,
+                          onChanged: (value) => save(reminderOn: value),
+                        ),
+                        if (reminderEnabled)
+                          ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            title: const Text('Hatırlatma saati', style: AppTextStyles.taskTitle),
+                            trailing: Text(
+                              '${reminderHour.toString().padLeft(2, '0')}:${reminderMinute.toString().padLeft(2, '0')}',
+                              style: AppTextStyles.streak,
+                            ),
+                            onTap: pickReminderTime,
+                          ),
                       ],
                     ),
                   ),

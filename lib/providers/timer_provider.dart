@@ -176,6 +176,18 @@ class TimerNotifier extends Notifier<TimerState> {
       coins: coins,
       actualMinutes: target,
     );
+
+    // Bugün zaten odaklanıldı — akşamki "serini kaybetme" hatırlatması
+    // gereksiz, yarına ertelensin (günlük tekrar kurulumu bozulmadan).
+    final stats = ref.read(userStatsProvider).value;
+    if (stats != null && stats.dailyReminderEnabled) {
+      unawaited(NotificationService.instance.scheduleDailyReminder(
+        hour: stats.dailyReminderHour,
+        minute: stats.dailyReminderMinute,
+        skipToday: true,
+      ));
+    }
+
     state = state.copyWith(phase: TimerPhase.success, coinsEarned: coins);
   }
 
