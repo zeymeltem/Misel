@@ -31,6 +31,13 @@ flutterfire configure
 - Android için `android/app/google-services.json` dosyasını da indirir;
   bu dosya `.gitignore`'da, commit edilmez — herkes kendisi üretir.
 
+**Bilinen CLI hatası:** `flutterfire_cli` bazen `firebase_options.dart`
+zaten doluysa üzerine düzgün yazmaz, eski içeriğin altına yeni içeriği
+ekler — dosyada `web`/`android` iki kere tanımlı kalır, derlenmez.
+Komuttan sonra dosyayı aç, `class DefaultFirebaseOptions` içinde her
+platform için **tek** `static const` tanımı olduğunu doğrula; ikiyse
+eskisini elle sil.
+
 ## 3. Authentication'ı aç
 
 Console → **Build → Authentication → Get started → Sign-in method**:
@@ -47,10 +54,32 @@ cd android
 ./gradlew signingReport
 ```
 
-Çıktıdaki `Variant: debug` bölümünden **SHA1** değerini kopyala →
-Console → Project settings (⚙) → senin Android uygulaman → **Add fingerprint**.
-Sonra `google-services.json`'u yeniden indir (`flutterfire configure` tekrar
-çalıştırmak da yeterli).
+Çıktıdaki `Variant: debug` bölümünden **SHA1** değerini kopyala. İki yoldan
+biriyle ekle:
+
+- **Console'dan:** Project settings (⚙) → senin Android uygulaman → **Add fingerprint**.
+- **CLI'dan (Console'a girmeden):**
+  ```
+  firebase apps:android:sha:create --project=<proje-id> <android-app-id> <SHA1>
+  ```
+  (`<android-app-id>` = `1:...` ile başlayan değer, `firebase apps:list --project=<proje-id>` ile görülür.)
+
+Fingerprint eklendikten sonra `google-services.json`'u yeniden indir —
+`flutterfire configure` tekrar çalıştırmak yeterli (yeni OAuth istemci
+bilgisi bu dosyanın içine gömülür, fingerprint eklemek tek başına
+yetmez).
+
+**`gradlew` "What went wrong: 25" hatasıyla çöküyorsa:** sistemdeki
+varsayılan Java çok yeni (örn. JDK 25), projenin Kotlin derleyicisi bu
+sürümü henüz tanımıyor. Android Studio kuruluysa kendi içinde uyumlu
+bir JDK (JBR, genelde 21) taşır — Flutter'a bunu kullanmasını söyle:
+```
+flutter config --jdk-dir="C:\Program Files\Android\Android Studio\jbr"
+```
+Ham `./gradlew` komutları için de aynı JDK'yı tek seferlik geçebilirsin:
+```
+./gradlew signingReport -Dorg.gradle.java.home="C:\Program Files\Android\Android Studio\jbr"
+```
 
 ## 4. Firestore'u aç ve kuralları yayınla
 
