@@ -25,6 +25,12 @@ class _TimerScreenState extends ConsumerState<TimerScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    // Önceki çalıştırma seans ortasında kapandıysa o seansı başarısız işle.
+    // RootShell IndexedStack kullandığı için bu initState uygulama açılışında
+    // bir kez çalışır.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(timerProvider.notifier).recoverAbandonedSession();
+    });
   }
 
   @override
@@ -76,6 +82,16 @@ class _SetupView extends ConsumerWidget {
     final stats = ref.watch(userStatsProvider).value;
     final totalCoins = stats?.totalCoins ?? 0;
 
+    final ownedMushrooms = ref.watch(ownedMushroomsProvider);
+    final selectedMushroomId = timer.mushroomTypeId ?? ownedMushrooms.firstOrNull?.id;
+    if (timer.mushroomTypeId == null && ownedMushrooms.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (ref.read(timerProvider).mushroomTypeId == null) {
+          notifier.setMushroomType(ownedMushrooms.first.id);
+        }
+      });
+    }
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppSizes.screenPadding),
       child: Column(
@@ -93,19 +109,7 @@ class _SetupView extends ConsumerWidget {
                     style: AppTextStyles.sectionTitle,
                   ),
                   const SizedBox(height: 2),
-                  Row(
-                    children: [
-                      const StreakBadge(suffix: 'günlük seri'),
-                      const SizedBox(width: 6),
-                      Text(
-                        '· ${stats?.displayName ?? 'Kaşif'}',
-                        style: AppTextStyles.streak.copyWith(
-                          color: AppColors.tabUnselectedText,
-                          fontWeight: FontWeight.normal,
-                        ),
-                      ),
-                    ],
-                  ),
+                  const StreakBadge(suffix: 'günlük seri'),
                 ],
               ),
               Container(
@@ -198,7 +202,7 @@ class _SetupView extends ConsumerWidget {
             icon: Icons.park_rounded,
             title: 'Büyütülecek Mantar',
             child: MushroomPicker(
-              selectedId: timer.mushroomTypeId,
+              selectedId: selectedMushroomId,
               onChanged: notifier.setMushroomType,
             ),
           ),
@@ -221,34 +225,8 @@ class _SetupView extends ConsumerWidget {
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 0.5),
             ),
           ),
-          const SizedBox(height: 16),
-
-          // Custom Warning Alert Box
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.amber.shade50.withOpacity(0.8),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.amber.shade200, width: 0.8),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(Icons.info_outline, color: Colors.amber.shade800, size: 20),
-                const SizedBox(width: 10),
-                const Expanded(
-                  child: Text(
-                    'Başka uygulamaya geçersen 10 saniye içinde dönmelisin, aksi takdirde mantarın çürür. Ekran kilidi serbesttir.',
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: Color(0xFF6B4A16),
-                      height: 1.4,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+          const SizedBox(height: 24),
+          const TodayTasksSection(),
         ],
       ),
     );
@@ -259,14 +237,6 @@ class _ActiveView extends ConsumerWidget {
   final TimerState timer;
   const _ActiveView({required this.timer});
 
-  String _formatRemaining() {
-    final remaining = Duration(minutes: timer.targetMinutes) - timer.elapsed;
-    final clamped = remaining.isNegative ? Duration.zero : remaining;
-    final minutes = clamped.inMinutes.remainder(60).toString().padLeft(2, '0');
-    final seconds = clamped.inSeconds.remainder(60).toString().padLeft(2, '0');
-    return '$minutes:$seconds';
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final notifier = ref.read(timerProvider.notifier);
@@ -274,7 +244,7 @@ class _ActiveView extends ConsumerWidget {
     final matchingTags = tags.where((t) => t.id == timer.tagId);
     final tagName = matchingTags.isEmpty ? null : matchingTags.first.name;
 
-    final mushrooms = ref.watch(shopMushroomsProvider).value ?? [];
+    final mushrooms = ref.watch(shopMushroomsProvider);
     final selectedMushroom = mushrooms.where((m) => m.id == timer.mushroomTypeId).firstOrNull;
 
     return SingleChildScrollView(
@@ -285,7 +255,6 @@ class _ActiveView extends ConsumerWidget {
           Center(
             child: MushroomGrowthRing(
               progress: timer.progress,
-              centerTime: _formatRemaining(),
               mushroomSprite: selectedMushroom?.spriteAsset,
             ),
           ),
@@ -297,14 +266,17 @@ class _ActiveView extends ConsumerWidget {
             spacing: 8,
             runSpacing: 8,
             children: [
+              if (tagName != null)
+                _InfoChip(
+                  text: tagName,
+                  bg: AppColors.chipSelectedBg,
+                  textColor: AppColors.chipSelectedText,
+                ),
               _InfoChip(
-                text: tagName != null
-                    ? '$tagName · ${timer.targetMinutes} dk'
-                    : '${timer.targetMinutes} dk',
+                text: '${timer.targetMinutes} dk',
                 bg: AppColors.chipSelectedBg,
                 textColor: AppColors.chipSelectedText,
               ),
-              const _StreakChip(),
             ],
           ),
           const SizedBox(height: 24),
@@ -329,7 +301,7 @@ class _ActiveView extends ConsumerWidget {
           
           const Align(
             alignment: Alignment.centerLeft,
-            child: TodayTasksSection(),
+            child: TodayTasksSection(readOnly: true),
           ),
         ],
       ),
@@ -342,7 +314,7 @@ class _ActiveView extends ConsumerWidget {
       builder: (context) => AlertDialog(
         title: const Text('Seanstan Vazgeç?'),
         content: const Text(
-          'Eğer şimdi vazgeçersen büyütmekte olduğun mantar çürüyecek. Emin misin?',
+          'Eğer şimdi vazgeçersen büyütmekte olduğun mantar çürüyecek ve bu seans kaydedilmeyecek. Yine de vazgeçmek istiyor musun?',
           style: TextStyle(fontSize: 14),
         ),
         actions: [
@@ -380,28 +352,11 @@ class _InfoChip extends StatelessWidget {
   }
 }
 
-class _StreakChip extends StatelessWidget {
-  const _StreakChip();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      decoration: BoxDecoration(
-        color: AppColors.cardBackground,
-        borderRadius: BorderRadius.circular(AppSizes.chipRadius),
-        border: Border.all(color: AppColors.chipUnselectedBorder),
-      ),
-      child: const StreakBadge(suffix: 'günlük seri'),
-    );
-  }
-}
-
 class _ResultView extends ConsumerWidget {
   final bool success;
   final int coinsEarned;
-  final int? mushroomTypeId;
-  
+  final String? mushroomTypeId;
+
   const _ResultView({
     required this.success,
     required this.coinsEarned,
@@ -411,7 +366,7 @@ class _ResultView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final notifier = ref.read(timerProvider.notifier);
-    final mushrooms = ref.watch(shopMushroomsProvider).value ?? [];
+    final mushrooms = ref.watch(shopMushroomsProvider);
     final mushroom = mushrooms.where((m) => m.id == mushroomTypeId).firstOrNull;
 
     return Center(
@@ -490,7 +445,7 @@ class _ResultView extends ConsumerWidget {
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'Maalesef seansı tamamlayamadın ve mantarın öldü. Bir sonraki sefere daha odaklanmış kalmaya çalış!',
+                  'Maalesef seansı tamamlayamadın ve mantarın çürüdü. Bir sonraki seansta görüşmek üzere.',
                   textAlign: TextAlign.center,
                   style: TextStyle(color: AppColors.tabUnselectedText, height: 1.4),
                 ),

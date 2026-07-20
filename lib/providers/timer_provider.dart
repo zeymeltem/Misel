@@ -2,11 +2,13 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../models/session.dart';
+import '../data/models/session.dart';
+import '../data/mushroom_catalog.dart';
+import '../data/session_repository.dart';
+import '../data/user_repository.dart';
 import '../services/economy_service.dart';
 import '../services/notification_service.dart';
-import '../services/seed_service.dart';
-import 'isar_provider.dart';
+import 'auth_provider.dart';
 
 enum TimerPhase { idle, running, success, failed }
 
@@ -16,8 +18,8 @@ class TimerState {
   final DateTime? startTime;
   final Duration elapsed;
   final int coinsEarned;
-  final int? tagId;
-  final int? mushroomTypeId;
+  final String? tagId;
+  final String? mushroomTypeId;
 
   const TimerState({
     required this.phase,
@@ -44,8 +46,8 @@ class TimerState {
     Duration? elapsed,
     int? coinsEarned,
     bool clearTag = false,
-    int? tagId,
-    int? mushroomTypeId,
+    String? tagId,
+    String? mushroomTypeId,
   }) {
     return TimerState(
       phase: phase ?? this.phase,
@@ -65,7 +67,6 @@ const _pauseTolerance = Duration(seconds: 10);
 class TimerNotifier extends Notifier<TimerState> {
   Timer? _ticker;
   DateTime? _pausedAt;
-  int? _starterMushroomId;
 
   @override
   TimerState build() {
@@ -78,22 +79,18 @@ class TimerNotifier extends Notifier<TimerState> {
     state = state.copyWith(targetMinutes: minutes);
   }
 
-  void setTag(int? tagId) {
+  void setTag(String? tagId) {
     if (state.phase != TimerPhase.idle) return;
     state = state.copyWith(tagId: tagId, clearTag: tagId == null);
   }
 
-  void setMushroomType(int mushroomTypeId) {
+  void setMushroomType(String mushroomTypeId) {
     if (state.phase != TimerPhase.idle) return;
     state = state.copyWith(mushroomTypeId: mushroomTypeId);
   }
 
   Future<void> start() async {
     if (state.phase == TimerPhase.running) return;
-
-    final isar = await ref.read(isarProvider.future);
-    final starter = SeedService.ensureStarterMushroom(isar);
-    _starterMushroomId = starter.id;
 
     final now = DateTime.now();
     state = state.copyWith(
@@ -105,6 +102,19 @@ class TimerNotifier extends Notifier<TimerState> {
 
     await NotificationService.instance
         .scheduleSessionEnd(now.add(Duration(minutes: state.targetMinutes)));
+
+    // Çalışan seansın izini Firestore'a bırak: uygulama seans ortasında
+    // ölürse açılışta recoverAbandonedSession bunu bulup başarısız sayar.
+    // await YOK — çevrimdışıyken sunucu onayı beklenirse sayaç başlamaz;
+    // yazma zaten yerel önbelleğe anında işlenir.
+    final uid = ref.read(currentUidProvider);
+    if (uid != null) {
+      unawaited(SessionRepository().setActiveSession(uid, _sessionFromState(
+        status: SessionStatus.failed,
+        coins: 0,
+        actualMinutes: 0,
+      )));
+    }
 
     _ticker = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
   }
@@ -170,30 +180,79 @@ class TimerNotifier extends Notifier<TimerState> {
     state = state.copyWith(phase: TimerPhase.failed, coinsEarned: 0);
   }
 
+  Session _sessionFromState({
+    required SessionStatus status,
+    required int coins,
+    required int actualMinutes,
+  }) {
+    return Session(
+      id: '',
+      startTime: state.startTime ?? DateTime.now(),
+      targetMinutes: state.targetMinutes,
+      actualMinutes: actualMinutes,
+      status: status,
+      tagId: state.tagId,
+      mushroomTypeId: state.mushroomTypeId ?? MushroomCatalog.starterId,
+      coinsEarned: coins,
+    );
+  }
+
   Future<void> _saveSession({
     required SessionStatus status,
     required int coins,
     required int actualMinutes,
   }) async {
-    final isar = await ref.read(isarProvider.future);
+    final uid = ref.read(currentUidProvider);
+    if (uid == null) return;
 
-    final session = Session()
-      ..startTime = state.startTime ?? DateTime.now()
-      ..targetMinutes = state.targetMinutes
-      ..actualMinutes = actualMinutes
-      ..status = status
-      ..tagId = state.tagId
-      ..mushroomTypeId = state.mushroomTypeId ?? _starterMushroomId ?? 0
-      ..coinsEarned = coins;
+    final session = _sessionFromState(
+      status: status,
+      coins: coins,
+      actualMinutes: actualMinutes,
+    );
 
-    isar.write((isar) {
-      session.id = isar.sessions.autoIncrement();
-      isar.sessions.put(session);
-    });
+    await SessionRepository().addSession(uid, session);
+    // Seans sonuçlandı — açılışta kurtarılacak iz kalmasın.
+    unawaited(SessionRepository().clearActiveSession(uid));
 
     if (status == SessionStatus.success) {
-      EconomyService.recordSuccessfulSession(isar, coins: coins);
+      await UserRepository().recordSuccessfulSession(uid, coins: coins);
     }
+    // Firestore .snapshots() akışları zaten canlı — elle invalidate gerekmez.
+  }
+
+  /// Uygulama açılışında çağrılır. Önceki çalıştırmada seans ortasında
+  /// kapanılmışsa (activeSession izi duruyorsa) o seansı başarısız olarak
+  /// tarihe işler. Kural gereği: 10 sn'den uzun her kopuş başarısızlıktır;
+  /// uygulamanın ölmesi de bir kopuştur.
+  Future<void> recoverAbandonedSession() async {
+    if (state.phase != TimerPhase.idle) return;
+    final uid = ref.read(currentUidProvider);
+    if (uid == null) return;
+
+    final abandoned = await SessionRepository().getActiveSession(uid);
+    if (abandoned == null) return;
+
+    var actualMinutes = DateTime.now().difference(abandoned.startTime).inMinutes;
+    if (actualMinutes > abandoned.targetMinutes) {
+      actualMinutes = abandoned.targetMinutes;
+    }
+    if (actualMinutes < 0) actualMinutes = 0; // cihaz saati geri alınmışsa
+
+    await SessionRepository().addSession(
+      uid,
+      Session(
+        id: '',
+        startTime: abandoned.startTime,
+        targetMinutes: abandoned.targetMinutes,
+        actualMinutes: actualMinutes,
+        status: SessionStatus.failed,
+        tagId: abandoned.tagId,
+        mushroomTypeId: abandoned.mushroomTypeId,
+        coinsEarned: 0,
+      ),
+    );
+    await SessionRepository().clearActiveSession(uid);
   }
 
   /// Sonuç ekranından yeni seansa dönüş.

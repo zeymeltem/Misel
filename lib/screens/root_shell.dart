@@ -20,7 +20,11 @@ class _RootShellState extends State<RootShell> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(child: _screens[_index]),
+      // IndexedStack: sekmeler arası geçişte ekranlar dispose edilmez. Bu şart,
+      // çünkü TimerScreen'deki WidgetsBindingObserver seans sırasında başka
+      // sekmedeyken de yaşamalı — yoksa "10 sn arka plan = başarısız" kuralı
+      // sadece Odaklan sekmesi açıkken işler.
+      body: SafeArea(child: IndexedStack(index: _index, children: _screens)),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           boxShadow: [
