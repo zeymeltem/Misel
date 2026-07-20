@@ -82,6 +82,12 @@ class _SetupView extends ConsumerWidget {
     final stats = ref.watch(userStatsProvider).value;
     final totalCoins = stats?.totalCoins ?? 0;
 
+    if (stats != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        notifier.applyDefaultMinutesFromSettings(stats.defaultSessionMinutes);
+      });
+    }
+
     final ownedMushrooms = ref.watch(ownedMushroomsProvider);
     final selectedMushroomId = timer.mushroomTypeId ?? ownedMushrooms.firstOrNull?.id;
     if (timer.mushroomTypeId == null && ownedMushrooms.isNotEmpty) {

@@ -9,6 +9,7 @@ import '../data/user_repository.dart';
 import '../services/economy_service.dart';
 import '../services/notification_service.dart';
 import 'auth_provider.dart';
+import 'economy_provider.dart';
 
 enum TimerPhase { idle, running, success, failed }
 
@@ -67,11 +68,21 @@ const _pauseTolerance = Duration(seconds: 10);
 class TimerNotifier extends Notifier<TimerState> {
   Timer? _ticker;
   DateTime? _pausedAt;
+  bool _appliedDefaultFromSettings = false;
 
   @override
   TimerState build() {
     ref.onDispose(() => _ticker?.cancel());
     return TimerState.initial();
+  }
+
+  /// Ayarlar ekranındaki "varsayılan seans süresi" ilk açılışta bir kez
+  /// uygulanır (bkz. _SetupView.build). Kullanıcı seansı bitirip [reset]
+  /// çağırdığında son kullanılan süre korunur — ayar tekrar dayatılmaz.
+  void applyDefaultMinutesFromSettings(int minutes) {
+    if (_appliedDefaultFromSettings || state.phase != TimerPhase.idle) return;
+    _appliedDefaultFromSettings = true;
+    state = state.copyWith(targetMinutes: minutes);
   }
 
   void setTargetMinutes(int minutes) {
@@ -100,8 +111,11 @@ class TimerNotifier extends Notifier<TimerState> {
       coinsEarned: 0,
     );
 
-    await NotificationService.instance
-        .scheduleSessionEnd(now.add(Duration(minutes: state.targetMinutes)));
+    final notificationsEnabled = ref.read(userStatsProvider).value?.notificationsEnabled ?? true;
+    if (notificationsEnabled) {
+      await NotificationService.instance
+          .scheduleSessionEnd(now.add(Duration(minutes: state.targetMinutes)));
+    }
 
     // Çalışan seansın izini Firestore'a bırak: uygulama seans ortasında
     // ölürse açılışta recoverAbandonedSession bunu bulup başarısız sayar.

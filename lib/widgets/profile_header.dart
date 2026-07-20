@@ -2,18 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/economy_provider.dart';
-import '../providers/stats_provider.dart';
+import '../screens/profile/edit_profile_screen.dart';
+import '../screens/profile/settings_screen.dart';
 import '../theme/app_theme.dart';
-import 'streak_badge.dart';
+import 'profile_photo_placeholder.dart';
 
-String _initialsOf(String name) {
-  final parts = name.trim().split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
-  if (parts.isEmpty) return '?';
-  if (parts.length == 1) return parts.first.substring(0, 1).toUpperCase();
-  return (parts.first.substring(0, 1) + parts.last.substring(0, 1)).toUpperCase();
-}
-
-/// Profil başlığı: avatar, isim, seri bilgisi ve isim düzenleme.
+/// Profil başlığı: fotoğraf yer tutucusu, isim, kullanıcı adı ve günlük
+/// hedef. Tüm düzenleme [EditProfileScreen]'de yapılır; buradaki "Düzenle"
+/// pili oraya yönlendirir.
 class ProfileHeader extends ConsumerWidget {
   const ProfileHeader({super.key});
 
@@ -23,131 +19,81 @@ class ProfileHeader extends ConsumerWidget {
     final name = (stats?.displayName?.trim().isNotEmpty ?? false)
         ? stats!.displayName!
         : 'İsimsiz Kaşif';
-    final longest = stats?.longestStreak ?? 0;
+    final username = stats?.username?.trim();
+    final dailyGoal = stats?.dailyGoalMinutes ?? 120;
 
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppColors.tabSelectedBg,
-            AppColors.tabSelectedBg.withOpacity(0.85),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(AppSizes.cardRadius),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.tabSelectedBg.withOpacity(0.15),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
-          )
-        ],
-      ),
-      child: Row(
-        children: [
-          // Styled Avatar
-          Container(
-            width: AppSizes.avatarSize + 4,
-            height: AppSizes.avatarSize + 4,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-              border: Border.all(color: AppColors.avatarBg, width: 2),
-            ),
-            alignment: Alignment.center,
-            child: Text(
-              _initialsOf(name),
-              style: AppTextStyles.avatarInitials.copyWith(
-                color: AppColors.tabSelectedBg,
-                fontSize: 18,
-              ),
-            ),
-          ),
-          const SizedBox(width: 14),
-          // User Information
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  name,
-                  style: AppTextStyles.profileName.copyWith(
-                    color: Colors.white,
-                    fontSize: 20,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: const StreakBadge(
-                        suffix: 'gün',
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'en uzun seri: $longest',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Colors.white70,
-                      ),
+    return Stack(
+      children: [
+        SizedBox(
+          width: double.infinity,
+          child: Column(
+            children: [
+              const ProfilePhotoPlaceholder(),
+              const SizedBox(height: 12),
+              Text(name, style: AppTextStyles.profileName.copyWith(fontSize: 19)),
+              if (username != null && username.isNotEmpty) ...[
+                const SizedBox(height: 2),
+                Text('@$username', style: AppTextStyles.legend.copyWith(fontWeight: FontWeight.w600)),
+              ],
+              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                decoration: BoxDecoration(
+                  color: AppColors.cardBackground,
+                  borderRadius: BorderRadius.circular(AppSizes.pillRadius),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 3,
+                      offset: const Offset(0, 1),
                     ),
                   ],
                 ),
-              ],
-            ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text('Günlük hedef  ', style: AppTextStyles.legend.copyWith(fontWeight: FontWeight.w600)),
+                    Text('$dailyGoal dk', style: AppTextStyles.streak),
+                  ],
+                ),
+              ),
+            ],
           ),
-          // Edit Profile Button
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.12),
-              shape: BoxShape.circle,
-            ),
-            child: IconButton(
-              icon: const Icon(Icons.edit_rounded, color: Colors.white, size: 20),
-              onPressed: () => _showRenameDialog(context, ref, name),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _showRenameDialog(BuildContext context, WidgetRef ref, String current) async {
-    final controller = TextEditingController(text: current == 'İsimsiz Kaşif' ? '' : current);
-    final result = await showDialog<String>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('İsmini düzenle'),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          decoration: const InputDecoration(
-            hintText: 'Örn. Elif K.',
-            border: OutlineInputBorder(),
-          ),
-          onSubmitted: (v) => Navigator.of(context).pop(v),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Vazgeç'),
+        Positioned(
+          top: 0,
+          left: 0,
+          child: IconButton(
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const SettingsScreen()),
+            ),
+            style: IconButton.styleFrom(
+              backgroundColor: AppColors.cardBackground,
+              foregroundColor: AppColors.taskTitle,
+            ),
+            icon: const Icon(Icons.settings_outlined),
+            tooltip: 'Ayarlar',
           ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(controller.text),
-            child: const Text('Kaydet'),
+        ),
+        Positioned(
+          top: 0,
+          right: 0,
+          child: TextButton(
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const EditProfileScreen()),
+            ),
+            style: TextButton.styleFrom(
+              backgroundColor: AppColors.cardBackground,
+              foregroundColor: AppColors.streakText,
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 9),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppSizes.pillRadius),
+              ),
+            ),
+            child: const Text('Düzenle', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
           ),
-        ],
-      ),
+        ),
+      ],
     );
-    if (result == null || result.trim().isEmpty) return;
-    await ref.read(profileNotifierProvider.notifier).rename(result);
   }
 }
