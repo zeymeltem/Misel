@@ -102,6 +102,10 @@ class UserRepository {
     }, SetOptions(merge: true));
   }
 
+  Future<void> markOnboardingSeen(String uid) async {
+    await _userDoc(uid).set({'hasSeenOnboarding': true}, SetOptions(merge: true));
+  }
+
   Future<void> setSelectedMushroomType(String uid, String mushroomTypeId) async {
     await _userDoc(uid).set({'selectedMushroomTypeId': mushroomTypeId}, SetOptions(merge: true));
   }

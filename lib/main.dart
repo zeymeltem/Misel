@@ -6,8 +6,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'data/user_repository.dart';
 import 'firebase_options.dart';
 import 'providers/auth_provider.dart';
+import 'providers/economy_provider.dart';
 import 'providers/notification_provider.dart';
 import 'screens/auth/auth_screen.dart';
+import 'screens/onboarding/onboarding_screen.dart';
 import 'screens/root_shell.dart';
 import 'theme/app_theme.dart';
 
@@ -108,8 +110,26 @@ class _LoggedInApp extends ConsumerWidget {
         if (!notifications.hasValue) {
           return const Scaffold(body: Center(child: CircularProgressIndicator()));
         }
-        return const RootShell();
+        return const _OnboardingGate();
       },
+    );
+  }
+}
+
+/// `ensureUserDocument` bittikten sonra `hasSeenOnboarding`i kontrol eder.
+/// Doküman az önce oluşturulmuş olabileceğinden akış burada ayrı tutulur —
+/// `userStatsProvider`in stream'i henüz ilk değerini yaymamışsa varsayılan
+/// (`false`) döner, bu da güvenli taraf: onboarding'i yanlışlıkla atlamaz.
+class _OnboardingGate extends ConsumerWidget {
+  const _OnboardingGate();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final stats = ref.watch(userStatsProvider);
+    return stats.when(
+      data: (value) => value.hasSeenOnboarding ? const RootShell() : const OnboardingScreen(),
+      loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
+      error: (error, _) => Scaffold(body: Center(child: Text('Hata: $error'))),
     );
   }
 }

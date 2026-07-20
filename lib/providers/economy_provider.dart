@@ -79,6 +79,22 @@ class SettingsNotifier extends Notifier<void> {
   }
 }
 
+/// İlk açılış tanıtım ekranını (bkz. OnboardingScreen) tekrar gösterilmeyecek
+/// şekilde işaretler.
+final onboardingNotifierProvider =
+    NotifierProvider<OnboardingNotifier, void>(OnboardingNotifier.new);
+
+class OnboardingNotifier extends Notifier<void> {
+  @override
+  void build() {}
+
+  Future<void> markSeen() async {
+    final uid = ref.read(currentUidProvider);
+    if (uid == null) return;
+    await UserRepository().markOnboardingSeen(uid);
+  }
+}
+
 /// Mağazadan mantar satın alma eylemini yürütür.
 final shopNotifierProvider =
     NotifierProvider<ShopNotifier, PurchaseResult?>(ShopNotifier.new);
