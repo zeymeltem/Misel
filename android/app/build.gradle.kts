@@ -44,6 +44,13 @@ flutter {
     source = "../.."
 }
 
+// google-services.json henüz eklenmemişse plugin'i uygulama — yoksa build
+// "File google-services.json is missing" hatasıyla kırılır. Dosya Firebase
+// Console'dan indirilip android/app/ altına konduğunda otomatik devreye girer.
+if (file("google-services.json").exists()) {
+    apply(plugin = "com.google.gms.google-services")
+}
+
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 }
