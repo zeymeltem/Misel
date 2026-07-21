@@ -1,5 +1,9 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../providers/economy_provider.dart';
 import '../../providers/stats_provider.dart';
@@ -20,6 +24,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   late final TextEditingController _usernameController;
   late final TextEditingController _goalController;
   bool _initialized = false;
+  bool _uploadingPhoto = false;
 
   @override
   void initState() {
@@ -35,6 +40,35 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     _usernameController.dispose();
     _goalController.dispose();
     super.dispose();
+  }
+
+  /// Galeriden seçtirir, 400x400'e küçültüp %70 kaliteyle sıkıştırır (image_picker
+  /// bunu seçim sırasında yapar), sonucu base64'e çevirip anında kaydeder.
+  /// Firebase Storage yerine Firestore'da metin olarak tutuluyor — bkz.
+  /// UserRepository.updateProfilePhoto.
+  Future<void> _pickAndUploadPhoto() async {
+    final XFile? picked = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 400,
+      maxHeight: 400,
+      imageQuality: 70,
+    );
+    if (picked == null || !mounted) return;
+
+    setState(() => _uploadingPhoto = true);
+    try {
+      final Uint8List bytes = await picked.readAsBytes();
+      final base64String = base64Encode(bytes);
+      await ref.read(profileNotifierProvider.notifier).updatePhoto(base64String);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Fotoğraf kaydedilemedi: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _uploadingPhoto = false);
+    }
   }
 
   Future<void> _save() async {
@@ -82,25 +116,44 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         padding: const EdgeInsets.symmetric(horizontal: AppSizes.screenPadding, vertical: 24),
         child: Column(
           children: [
-            Stack(
-              children: [
-                const ProfilePhotoPlaceholder(),
-                Positioned(
-                  bottom: 0,
-                  right: 0,
-                  child: Container(
-                    width: 28,
-                    height: 28,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: AppColors.streakText,
-                      border: Border.all(color: AppColors.background, width: 3),
+            GestureDetector(
+              onTap: _uploadingPhoto ? null : _pickAndUploadPhoto,
+              child: Stack(
+                children: [
+                  ProfilePhotoPlaceholder(photoBase64: stats?.photoBase64),
+                  if (_uploadingPhoto)
+                    Positioned.fill(
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.black.withOpacity(0.35),
+                        ),
+                        child: const Center(
+                          child: SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                          ),
+                        ),
+                      ),
                     ),
-                    alignment: Alignment.center,
-                    child: const Icon(Icons.edit_rounded, size: 13, color: Colors.white),
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: Container(
+                      width: 28,
+                      height: 28,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: AppColors.streakText,
+                        border: Border.all(color: AppColors.background, width: 3),
+                      ),
+                      alignment: Alignment.center,
+                      child: const Icon(Icons.edit_rounded, size: 13, color: Colors.white),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
             const SizedBox(height: 24),
             _EditCard(

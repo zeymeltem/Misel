@@ -28,7 +28,7 @@ class ProfileHeader extends ConsumerWidget {
           width: double.infinity,
           child: Column(
             children: [
-              const ProfilePhotoPlaceholder(),
+              ProfilePhotoPlaceholder(photoBase64: stats?.photoBase64),
               const SizedBox(height: 12),
               Text(name, style: AppTextStyles.profileName.copyWith(fontSize: 19)),
               if (username != null && username.isNotEmpty) ...[

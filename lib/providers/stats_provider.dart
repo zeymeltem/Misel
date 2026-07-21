@@ -45,4 +45,12 @@ class ProfileNotifier extends Notifier<void> {
       dailyGoalMinutes: dailyGoalMinutes,
     );
   }
+
+  /// Fotoğraf ayrı bir yazım — seçilir seçilmez hemen kaydedilir, isim/kullanıcı
+  /// adı/hedef için "Kaydet"e basılmasını beklemez.
+  Future<void> updatePhoto(String photoBase64) async {
+    final uid = ref.read(currentUidProvider);
+    if (uid == null) return;
+    await UserRepository().updateProfilePhoto(uid, photoBase64);
+  }
 }

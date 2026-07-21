@@ -1,16 +1,22 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
 
-/// Fotoğraf yükleme henüz uygulanmadı; `assets/images` altına gerçek görsel
-/// eklendiğinde bu alan bir Image.asset ile değiştirilecek.
+/// Salt görüntüleme amaçlı avatar: [photoBase64] varsa gösterir, yoksa nötr
+/// bir kişi ikonu. "Fotoğraf ekle" daveti kasıtlı olarak burada değil —
+/// düzenleme eylemi sadece [EditProfileScreen]'de yaşar (bkz. o dosyadaki
+/// `_EditablePhotoAvatar`).
 class ProfilePhotoPlaceholder extends StatelessWidget {
   final double size;
+  final String? photoBase64;
 
-  const ProfilePhotoPlaceholder({super.key, this.size = AppSizes.avatarSize});
+  const ProfilePhotoPlaceholder({super.key, this.size = AppSizes.avatarSize, this.photoBase64});
 
   @override
   Widget build(BuildContext context) {
+    final hasPhoto = photoBase64 != null && photoBase64!.isNotEmpty;
     return Container(
       width: size,
       height: size,
@@ -19,19 +25,16 @@ class ProfilePhotoPlaceholder extends StatelessWidget {
         color: AppColors.statCardBg,
         border: Border.all(color: AppColors.streakText, width: 3),
       ),
+      clipBehavior: Clip.antiAlias,
       alignment: Alignment.center,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.add_a_photo_outlined, color: AppColors.streakText, size: size * 0.23),
-          const SizedBox(height: 4),
-          Text(
-            'Fotoğraf ekle',
-            textAlign: TextAlign.center,
-            style: AppTextStyles.legend.copyWith(fontSize: 10),
-          ),
-        ],
-      ),
+      child: hasPhoto
+          ? Image.memory(
+              base64Decode(photoBase64!),
+              width: size,
+              height: size,
+              fit: BoxFit.cover,
+            )
+          : Icon(Icons.person_outline, color: AppColors.streakText, size: size * 0.45),
     );
   }
 }

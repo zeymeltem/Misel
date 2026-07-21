@@ -85,6 +85,14 @@ class UserRepository {
     });
   }
 
+  /// Profil fotoğrafını kaydeder. Firebase Storage kullanmıyoruz (Ekim
+  /// 2024'ten beri Storage'ı açmak Blaze planına, yani kayıtlı bir ödeme
+  /// yöntemine bağlı) — bunun yerine küçültülüp sıkıştırılmış görsel
+  /// doğrudan kullanıcı dokümanında base64 metin olarak tutulur.
+  Future<void> updateProfilePhoto(String uid, String photoBase64) async {
+    await _userDoc(uid).set({'photoBase64': photoBase64}, SetOptions(merge: true));
+  }
+
   Future<void> updateSettings(
     String uid, {
     required bool notificationsEnabled,

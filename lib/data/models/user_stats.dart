@@ -17,6 +17,7 @@ class UserStats {
   final int dailyReminderHour;
   final int dailyReminderMinute;
   final bool hasSeenOnboarding;
+  final String? photoBase64;
 
   const UserStats({
     this.displayName,
@@ -34,6 +35,7 @@ class UserStats {
     this.dailyReminderHour = 20,
     this.dailyReminderMinute = 0,
     this.hasSeenOnboarding = false,
+    this.photoBase64,
   });
 
   factory UserStats.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
@@ -55,6 +57,7 @@ class UserStats {
       dailyReminderHour: data['dailyReminderHour'] as int? ?? 20,
       dailyReminderMinute: data['dailyReminderMinute'] as int? ?? 0,
       hasSeenOnboarding: data['hasSeenOnboarding'] as bool? ?? false,
+      photoBase64: data['photoBase64'] as String?,
     );
   }
 
@@ -74,6 +77,7 @@ class UserStats {
         'dailyReminderHour': dailyReminderHour,
         'dailyReminderMinute': dailyReminderMinute,
         'hasSeenOnboarding': hasSeenOnboarding,
+        'photoBase64': photoBase64,
       };
 
   UserStats copyWith({
@@ -92,6 +96,7 @@ class UserStats {
     int? dailyReminderHour,
     int? dailyReminderMinute,
     bool? hasSeenOnboarding,
+    String? photoBase64,
   }) {
     return UserStats(
       displayName: displayName ?? this.displayName,
@@ -109,6 +114,7 @@ class UserStats {
       dailyReminderHour: dailyReminderHour ?? this.dailyReminderHour,
       dailyReminderMinute: dailyReminderMinute ?? this.dailyReminderMinute,
       hasSeenOnboarding: hasSeenOnboarding ?? this.hasSeenOnboarding,
+      photoBase64: photoBase64 ?? this.photoBase64,
     );
   }
 }
