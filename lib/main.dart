@@ -96,7 +96,7 @@ class _LoggedInApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(authStateProvider).value!;
     final notifications = ref.watch(notificationInitProvider);
-    ref.watch(dailyReminderSyncProvider);
+    ref.listen(userStatsProvider, (previous, next) => syncDailyReminder(next.value));
 
     return FutureBuilder<void>(
       future: UserRepository().ensureUserDocument(user.uid, displayName: user.displayName),
