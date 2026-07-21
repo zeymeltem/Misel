@@ -38,6 +38,13 @@ class TimerState {
   double get progress =>
       (elapsed.inMilliseconds / (targetMinutes * 60 * 1000)).clamp(0, 1);
 
+  /// Sayaç ekranındaki dijital saat için kalan süre; hedefi aşan artık
+  /// (ör. tam _finishSuccess çağrılmadan önceki son tick) sıfıra kırpılır.
+  Duration get remaining {
+    final total = Duration(minutes: targetMinutes) - elapsed;
+    return total.isNegative ? Duration.zero : total;
+  }
+
   int get estimatedCoins => EconomyService.estimateCoins(targetMinutes);
 
   TimerState copyWith({

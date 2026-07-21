@@ -262,6 +262,7 @@ class _ActiveView extends ConsumerWidget {
             child: MushroomGrowthRing(
               progress: timer.progress,
               mushroomSprite: selectedMushroom?.spriteAsset,
+              remaining: timer.remaining,
             ),
           ),
           const SizedBox(height: 24),
