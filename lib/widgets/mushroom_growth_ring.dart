@@ -29,20 +29,12 @@ extension GrowthStageX on GrowthStage {
 class MushroomGrowthRing extends StatelessWidget {
   final double progress;
   final String? mushroomSprite;
-  final Duration? remaining;
 
   const MushroomGrowthRing({
     super.key,
     required this.progress,
     this.mushroomSprite,
-    this.remaining,
   });
-
-  static String _formatDuration(Duration d) {
-    final minutes = d.inMinutes.remainder(60).toString().padLeft(2, '0');
-    final seconds = d.inSeconds.remainder(60).toString().padLeft(2, '0');
-    return '$minutes:$seconds';
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -107,19 +99,7 @@ class MushroomGrowthRing extends StatelessWidget {
                   ),
                 ),
               ),
-              if (remaining != null) ...[
-                const SizedBox(height: 8),
-                Text(
-                  _formatDuration(remaining!),
-                  style: const TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w700,
-                    fontFeatures: [FontFeature.tabularFigures()],
-                    color: AppColors.taskTitle,
-                  ),
-                ),
-              ],
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
               // Growth stage badge
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),

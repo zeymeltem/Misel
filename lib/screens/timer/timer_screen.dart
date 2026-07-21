@@ -11,6 +11,12 @@ import '../../widgets/streak_badge.dart';
 import '../../widgets/tag_selector.dart';
 import '../../widgets/today_tasks_section.dart';
 
+String _formatDuration(Duration d) {
+  final minutes = d.inMinutes.remainder(60).toString().padLeft(2, '0');
+  final seconds = d.inSeconds.remainder(60).toString().padLeft(2, '0');
+  return '$minutes:$seconds';
+}
+
 /// Sayaç: seans kurulumu + odak seansı (kronometre) + yaşam döngüsü tespiti.
 class TimerScreen extends ConsumerStatefulWidget {
   const TimerScreen({super.key});
@@ -262,11 +268,20 @@ class _ActiveView extends ConsumerWidget {
             child: MushroomGrowthRing(
               progress: timer.progress,
               mushroomSprite: selectedMushroom?.spriteAsset,
-              remaining: timer.remaining,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            _formatDuration(timer.remaining),
+            style: const TextStyle(
+              fontSize: 40,
+              fontWeight: FontWeight.w700,
+              fontFeatures: [FontFeature.tabularFigures()],
+              color: AppColors.taskTitle,
             ),
           ),
           const SizedBox(height: 24),
-          
+
           // Focus Info Chips
           Wrap(
             alignment: WrapAlignment.center,
