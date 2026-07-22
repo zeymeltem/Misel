@@ -16,11 +16,15 @@ class AuthScreen extends ConsumerStatefulWidget {
 class _AuthScreenState extends ConsumerState<AuthScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _nameController = TextEditingController();
+  final _usernameController = TextEditingController();
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _nameController.dispose();
+    _usernameController.dispose();
     super.dispose();
   }
 
@@ -74,6 +78,27 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                     const SizedBox(height: 16),
                   ],
 
+                  if (!isLogin) ...[
+                    TextField(
+                      controller: _nameController,
+                      textCapitalization: TextCapitalization.words,
+                      decoration: const InputDecoration(
+                        labelText: 'Ad Soyad',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: _usernameController,
+                      autocorrect: false,
+                      decoration: const InputDecoration(
+                        labelText: 'Kullanıcı adı',
+                        hintText: '@kullaniciadi',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
                   TextField(
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
@@ -92,6 +117,13 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                       border: OutlineInputBorder(),
                     ),
                   ),
+                  if (!isLogin) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      'En az 8 karakter; büyük/küçük harf ve rakam içermeli.',
+                      style: AppTextStyles.legend.copyWith(fontSize: 12),
+                    ),
+                  ],
                   const SizedBox(height: 8),
                   Align(
                     alignment: Alignment.centerRight,
@@ -162,7 +194,12 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   }
 
   void _submitEmail(AuthFormNotifier notifier) {
-    notifier.submitEmail(_emailController.text, _passwordController.text);
+    notifier.submitEmail(
+      _emailController.text,
+      _passwordController.text,
+      name: _nameController.text,
+      username: _usernameController.text,
+    );
   }
 
   Future<void> _showForgotPasswordDialog(AuthFormNotifier notifier) async {

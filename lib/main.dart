@@ -9,6 +9,7 @@ import 'providers/auth_provider.dart';
 import 'providers/economy_provider.dart';
 import 'providers/notification_provider.dart';
 import 'screens/auth/auth_screen.dart';
+import 'screens/auth/email_verification_screen.dart';
 import 'screens/onboarding/onboarding_screen.dart';
 import 'screens/root_shell.dart';
 import 'theme/app_theme.dart';
@@ -110,7 +111,12 @@ class _LoggedInApp extends ConsumerWidget {
         if (!notifications.hasValue) {
           return const Scaffold(body: Center(child: CircularProgressIndicator()));
         }
-        return const _OnboardingGate();
+        // E-posta/şifre ile kayıt olup e-postasını doğrulamamış kullanıcı
+        // buradan geçemez; Google girişi zaten doğrulanmış sayılır.
+        if (ref.read(authRepositoryProvider).needsEmailVerification) {
+          return const EmailVerificationScreen();
+        }
+        return const OnboardingGate();
       },
     );
   }
@@ -120,8 +126,10 @@ class _LoggedInApp extends ConsumerWidget {
 /// Doküman az önce oluşturulmuş olabileceğinden akış burada ayrı tutulur —
 /// `userStatsProvider`in stream'i henüz ilk değerini yaymamışsa varsayılan
 /// (`false`) döner, bu da güvenli taraf: onboarding'i yanlışlıkla atlamaz.
-class _OnboardingGate extends ConsumerWidget {
-  const _OnboardingGate();
+/// Public: [EmailVerificationScreen] doğrulama başarılı olunca buraya
+/// doğrudan pushReplacement yapabilsin diye.
+class OnboardingGate extends ConsumerWidget {
+  const OnboardingGate({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

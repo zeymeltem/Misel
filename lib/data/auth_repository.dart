@@ -15,8 +15,35 @@ class AuthRepository {
     await _auth.signInWithEmailAndPassword(email: email.trim(), password: password);
   }
 
+  /// Hesabı oluşturur ve hemen ardından doğrulama e-postası gönderir.
+  /// Doğrulanana kadar `main.dart`'taki kapı kullanıcıyı EmailVerificationScreen'de
+  /// bekletir (bkz. isEmailVerified).
   Future<void> registerWithEmail(String email, String password) async {
-    await _auth.createUserWithEmailAndPassword(email: email.trim(), password: password);
+    final credential =
+        await _auth.createUserWithEmailAndPassword(email: email.trim(), password: password);
+    await credential.user?.sendEmailVerification();
+  }
+
+  Future<void> sendEmailVerification() async {
+    await _auth.currentUser?.sendEmailVerification();
+  }
+
+  /// Firebase'in kendi User nesnesi doğrulama durumunu anlık yenilemez —
+  /// kullanıcı "Doğruladım" dediğinde sunucudan taze veri çekmek için reload
+  /// gerekir.
+  Future<bool> reloadAndCheckEmailVerified() async {
+    await _auth.currentUser?.reload();
+    return _auth.currentUser?.emailVerified ?? false;
+  }
+
+  /// Google ile giriş yapanların e-postası zaten Google tarafından
+  /// doğrulanmış sayılır; doğrulama ekranı sadece e-posta/şifre
+  /// kullanıcılarını bekletmeli.
+  bool get needsEmailVerification {
+    final user = _auth.currentUser;
+    if (user == null) return false;
+    final isPasswordUser = user.providerData.any((p) => p.providerId == 'password');
+    return isPasswordUser && !user.emailVerified;
   }
 
   Future<void> sendPasswordResetEmail(String email) async {
