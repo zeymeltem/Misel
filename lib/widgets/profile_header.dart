@@ -5,6 +5,7 @@ import '../providers/economy_provider.dart';
 import '../screens/profile/edit_profile_screen.dart';
 import '../screens/profile/settings_screen.dart';
 import '../theme/app_theme.dart';
+import 'pixel_number.dart';
 import 'profile_photo_placeholder.dart';
 
 /// Profil başlığı: fotoğraf yer tutucusu, isim, kullanıcı adı ve günlük
@@ -30,7 +31,7 @@ class ProfileHeader extends ConsumerWidget {
             children: [
               ProfilePhotoPlaceholder(photoBase64: stats?.photoBase64),
               const SizedBox(height: 12),
-              Text(name, style: AppTextStyles.profileName.copyWith(fontSize: 19)),
+              Text(name, style: AppTextStyles.profileName.copyWith(fontSize: 16)),
               if (username != null && username.isNotEmpty) ...[
                 const SizedBox(height: 2),
                 Text('@$username', style: AppTextStyles.legend.copyWith(fontWeight: FontWeight.w600)),
@@ -43,7 +44,7 @@ class ProfileHeader extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(AppSizes.pillRadius),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withValues(alpha: 0.05),
                       blurRadius: 3,
                       offset: const Offset(0, 1),
                     ),
@@ -53,7 +54,7 @@ class ProfileHeader extends ConsumerWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text('Günlük hedef  ', style: AppTextStyles.legend.copyWith(fontWeight: FontWeight.w600)),
-                    Text('$dailyGoal dk', style: AppTextStyles.streak),
+                    NumberText('$dailyGoal dk', style: AppTextStyles.streak),
                   ],
                 ),
               ),
@@ -90,7 +91,7 @@ class ProfileHeader extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(AppSizes.pillRadius),
               ),
             ),
-            child: const Text('Düzenle', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
+            child: const Text('Düzenle', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
           ),
         ),
       ],

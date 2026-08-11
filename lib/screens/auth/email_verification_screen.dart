@@ -84,7 +84,7 @@ class _EmailVerificationScreenState extends ConsumerState<EmailVerificationScree
                   Text(
                     'E-postanı doğrula',
                     textAlign: TextAlign.center,
-                    style: AppTextStyles.sectionTitle.copyWith(fontSize: 22),
+                    style: AppTextStyles.sectionTitle.copyWith(fontSize: 24),
                   ),
                   const SizedBox(height: 8),
                   Text(

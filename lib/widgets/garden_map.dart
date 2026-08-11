@@ -6,11 +6,13 @@ import '../providers/garden_provider.dart';
 import '../providers/tag_provider.dart';
 import '../services/garden_layout_service.dart';
 import '../theme/app_theme.dart';
+import 'pixel_number.dart';
 
-/// Bahçe haritası: tüm seansların (cancelled hariç) merkezden dışa sarmal
-/// yerleştiği, kaydırılabilir + yakınlaştırılabilir ızgara. Harita hiçbir
-/// yerde saklanmaz — her açılışta [gardenCellsProvider] üzerinden Session
-/// kayıtlarından yeniden türetilir.
+/// Bahçe haritası: sabit boyutlu (352x400) tasarım PNG'si üstünde, o
+/// parsele ait mantarlar rastgele-ama-sabit konumlarda gösterilir. Seans
+/// sayısı arttıkça yeni parseller (sayfalar) açılır, yatay kaydırmayla
+/// gezilir. Harita hiçbir yerde saklanmaz — her açılışta
+/// [gardenCellsProvider] üzerinden Session kayıtlarından yeniden türetilir.
 class GardenMap extends ConsumerStatefulWidget {
   const GardenMap({super.key});
 
@@ -19,129 +21,56 @@ class GardenMap extends ConsumerStatefulWidget {
 }
 
 class _GardenMapState extends ConsumerState<GardenMap> {
-  final _controller = TransformationController();
-  Rect _visibleRect = Rect.zero;
-  bool _centered = false;
-  double? _lastCenterOffset;
+  final _pageController = PageController();
+  bool _jumpedToLast = false;
 
   @override
   void dispose() {
-    _controller.dispose();
+    _pageController.dispose();
     super.dispose();
-  }
-
-  void _updateVisibleRect(Size viewportSize) {
-    final matrix = _controller.value;
-    final scale = matrix.getMaxScaleOnAxis();
-    final translation = matrix.getTranslation();
-    final rect = Rect.fromLTWH(
-      -translation.x / scale,
-      -translation.y / scale,
-      viewportSize.width / scale,
-      viewportSize.height / scale,
-    ).inflate(AppSizes.gardenCellSize * 2);
-    if (rect != _visibleRect && mounted) {
-      setState(() => _visibleRect = rect);
-    }
-  }
-
-  void _centerOn(double mapSize, Size viewportSize) {
-    if (_centered) return;
-    _centered = true;
-    final offset = (mapSize / 2) - (viewportSize.width / 2);
-    _controller.value = Matrix4.translationValues(-offset, -offset, 0);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _updateVisibleRect(viewportSize));
-  }
-
-  /// Bahçe büyüyüp (0,0) merkezinin piksel karşılığı kaydığında (centerOffset
-  /// artınca), görünümü aynı yerde tutmak için transform'u telafi eder.
-  /// Aksi halde her yeni halka eklendiğinde tüm mantarlar görünüm dışına
-  /// kaymış gibi görünürdü.
-  void _compensateAnchorShift(double delta, Size viewportSize) {
-    _controller.value = _controller.value.clone()..translateByDouble(-delta, -delta, 0, 1);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _updateVisibleRect(viewportSize));
   }
 
   @override
   Widget build(BuildContext context) {
     final cells = ref.watch(gardenCellsProvider);
     final tags = ref.watch(tagsProvider).value ?? [];
-    final radius = gardenRadius(cells.length);
-    const cellSize = AppSizes.gardenCellSize;
-    final mapSize = (2 * radius + 1) * cellSize;
-    final centerOffset = radius * cellSize;
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(AppSizes.cardRadius),
-      child: SizedBox(
-        height: AppSizes.gardenCardHeight,
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final viewportSize = constraints.biggest;
-            WidgetsBinding.instance.addPostFrameCallback((_) => _centerOn(mapSize, viewportSize));
-            if (_visibleRect == Rect.zero) {
-              _visibleRect = Rect.fromLTWH(0, 0, viewportSize.width, viewportSize.height)
-                  .inflate(cellSize * 2);
-            }
-            if (_centered && _lastCenterOffset != null && _lastCenterOffset != centerOffset) {
-              final delta = centerOffset - _lastCenterOffset!;
-              WidgetsBinding.instance
-                  .addPostFrameCallback((_) => _compensateAnchorShift(delta, viewportSize));
-            }
-            _lastCenterOffset = centerOffset;
+    final plotCount = cells.isEmpty ? 1 : cells.map((c) => c.plotIndex).reduce((a, b) => a > b ? a : b) + 1;
+    final cellsByPlot = <int, List<GardenCell>>{};
+    for (final cell in cells) {
+      cellsByPlot.putIfAbsent(cell.plotIndex, () => []).add(cell);
+    }
 
-            final visibleCells = cells.where((cell) {
-              final left = centerOffset + cell.coord.x * cellSize;
-              final top = centerOffset - cell.coord.y * cellSize;
-              return _visibleRect.overlaps(Rect.fromLTWH(left, top, cellSize, cellSize));
-            }).toList();
+    // İlk açılışta en son (dolmakta olan) parsele atla — kullanıcı her seferinde
+    // en güncel bahçesini görsün.
+    if (!_jumpedToLast) {
+      _jumpedToLast = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_pageController.hasClients) _pageController.jumpToPage(plotCount - 1);
+      });
+    }
 
-            return NotificationListener<Notification>(
-              onNotification: (_) => false,
-              child: InteractiveViewer(
-                transformationController: _controller,
-                constrained: false,
-                minScale: 0.4,
-                maxScale: 3,
-                boundaryMargin: const EdgeInsets.all(80),
-                onInteractionUpdate: (_) => _updateVisibleRect(viewportSize),
-                child: SizedBox(
-                  width: mapSize,
-                  height: mapSize,
-                  child: Stack(
-                    children: [
-                      Positioned.fill(
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            image: DecorationImage(
-                              image: const AssetImage('assets/images/garden_bg.png'),
-                              repeat: ImageRepeat.repeat,
-                              fit: BoxFit.none,
-                              filterQuality: FilterQuality.none,
-                            ),
-                            color: AppColors.gardenBackground,
-                          ),
-                        ),
-                      ),
-                      for (final cell in visibleCells)
-                        Positioned(
-                          left: centerOffset + cell.coord.x * cellSize,
-                          top: centerOffset - cell.coord.y * cellSize,
-                          width: cellSize,
-                          height: cellSize,
-                          child: _MushroomTile(
-                            cell: cell,
-                            onTap: () => _showSessionDetails(context, cell, tags),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
+    return Column(
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(AppSizes.cardRadius),
+          child: AspectRatio(
+            aspectRatio: AppSizes.gardenMapWidth / AppSizes.gardenMapHeight,
+            child: PageView.builder(
+              controller: _pageController,
+              itemCount: plotCount,
+              itemBuilder: (context, plotIndex) => _GardenPlotPage(
+                cells: cellsByPlot[plotIndex] ?? const [],
+                onCellTap: (cell) => _showSessionDetails(context, cell, tags),
               ),
-            );
-          },
+            ),
+          ),
         ),
-      ),
+        if (plotCount > 1) ...[
+          const SizedBox(height: 8),
+          _PlotIndicator(controller: _pageController, plotCount: plotCount),
+        ],
+      ],
     );
   }
 
@@ -197,7 +126,7 @@ class _GardenMapState extends ConsumerState<GardenMap> {
               ],
             ),
             const SizedBox(height: 20),
-            Text('Tarih: ${_formatDateTime(session.startTime)}', style: AppTextStyles.warning),
+            NumberText('Tarih: ${_formatDateTime(session.startTime)}', style: AppTextStyles.warning),
             const SizedBox(height: 12),
           ],
         ),
@@ -211,29 +140,78 @@ class _GardenMapState extends ConsumerState<GardenMap> {
   }
 }
 
-class _MushroomTile extends StatelessWidget {
-  final GardenCell cell;
-  final VoidCallback onTap;
-  const _MushroomTile({required this.cell, required this.onTap});
+/// Tek bir parselin sayfası: sabit 352x400 tasarım arka planı + üstünde o
+/// parsele düşen mantarlar. Ekran genişliğine göre orantılı ölçeklenir
+/// (LayoutBuilder + FittedBox), pixel art netliği FilterQuality.none ile korunur.
+class _GardenPlotPage extends StatelessWidget {
+  final List<GardenCell> cells;
+  final ValueChanged<GardenCell> onCellTap;
+
+  const _GardenPlotPage({required this.cells, required this.onCellTap});
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.all(4),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.85),
-            borderRadius: BorderRadius.circular(10),
-            boxShadow: [
-              BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 3, offset: const Offset(0, 1)),
-            ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return FittedBox(
+          fit: BoxFit.contain,
+          child: SizedBox(
+            width: AppSizes.gardenMapWidth,
+            height: AppSizes.gardenMapHeight,
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: Image.asset(
+                    'assets/images/garden_map.png',
+                    fit: BoxFit.fill,
+                    filterQuality: FilterQuality.none,
+                  ),
+                ),
+                for (final cell in cells)
+                  Positioned(
+                    // cell.position zaten hücre içinde ortalanmış + alttan
+                    // boşluklu sol-üst köşe (bkz. garden_layout_service.dart).
+                    left: cell.position.dx,
+                    top: cell.position.dy,
+                    width: AppSizes.gardenMushroomSize,
+                    height: AppSizes.gardenMushroomSize,
+                    child: GestureDetector(
+                      onTap: () => onCellTap(cell),
+                      child: _MushroomSprite(spriteAsset: cell.spriteAsset, size: AppSizes.gardenMushroomSize),
+                    ),
+                  ),
+              ],
+            ),
           ),
-          padding: const EdgeInsets.all(4),
-          child: _MushroomSprite(spriteAsset: cell.spriteAsset, size: AppSizes.gardenCellSize - 16),
-        ),
-      ),
+        );
+      },
+    );
+  }
+}
+
+/// Kaçıncı parselin görüntülendiğini gösteren metin ("Parsel 3 / 20").
+/// Nokta-başına-parsel göstergesi yerine metin kullanılır: parsel sayısı
+/// çok arttığında (bkz. dev "+500 test seansı") noktalar satırı taşardı,
+/// metin her koşulda sabit genişlikte kalır.
+class _PlotIndicator extends StatelessWidget {
+  final PageController controller;
+  final int plotCount;
+
+  const _PlotIndicator({required this.controller, required this.plotCount});
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: controller,
+      builder: (context, _) {
+        final current = controller.hasClients && controller.page != null
+            ? controller.page!.round()
+            : plotCount - 1;
+        return NumberText(
+          'Parsel ${current + 1} / $plotCount',
+          style: AppTextStyles.warning,
+        );
+      },
     );
   }
 }
@@ -247,11 +225,12 @@ class _MushroomSprite extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isRotten = spriteAsset == rottenMushroomSprite;
+    final isRotten = spriteAsset == rottenMushroomMapSprite;
     return Image.asset(
       spriteAsset,
       width: size,
       height: size,
+      fit: BoxFit.fill,
       filterQuality: FilterQuality.none,
       errorBuilder: (context, error, stack) => Center(
         child: Text(isRotten ? '🥀' : '🍄', style: TextStyle(fontSize: size * 0.6)),
@@ -272,13 +251,17 @@ class _DetailColumn extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Icon(icon, size: 20, color: AppColors.tabUnselectedText.withOpacity(0.8)),
+        Icon(icon, size: 20, color: AppColors.tabUnselectedText.withValues(alpha: 0.8)),
         const SizedBox(height: 6),
-        Text(label, style: AppTextStyles.statLabel.copyWith(fontSize: 10, letterSpacing: 0.8)),
+        Text(label, style: AppTextStyles.statLabel.copyWith(fontSize: 8, letterSpacing: 0.8)),
         const SizedBox(height: 4),
-        Text(
+        NumberText(
           value,
-          style: AppTextStyles.statValue.copyWith(fontSize: 14, color: valueColor ?? AppColors.statValueText),
+          style: AppTextStyles.statValue.copyWith(
+            fontSize: 16,
+            letterSpacing: -0.5,
+            color: valueColor ?? AppColors.statValueText,
+          ),
         ),
       ],
     );

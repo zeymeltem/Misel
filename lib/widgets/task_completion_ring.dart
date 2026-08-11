@@ -5,6 +5,7 @@ import '../providers/stats_provider.dart';
 import '../screens/profile/task_history_screen.dart';
 import '../theme/app_theme.dart';
 import 'percent_ring.dart';
+import 'pixel_number.dart';
 
 /// Bu hafta tamamlanan görevlerin oranını donut grafikte gösterir; altında
 /// [TaskHistoryScreen]'e giden gömülü bir "Görev Geçmişi" satırı bulunur.
@@ -24,13 +25,13 @@ class TaskCompletionRing extends ConsumerWidget {
         borderRadius: BorderRadius.circular(AppSizes.statCardRadius),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 10,
             offset: const Offset(0, 4),
           )
         ],
         border: Border.all(
-          color: AppColors.chipUnselectedBorder.withOpacity(0.5),
+          color: AppColors.chipUnselectedBorder.withValues(alpha: 0.5),
           width: 1,
         ),
       ),
@@ -64,7 +65,7 @@ class TaskCompletionRing extends ConsumerWidget {
                         children: [
                           Text('Tamamlanan görevler', style: AppTextStyles.statLabel),
                           const SizedBox(height: 6),
-                          Text('$completed / $total', style: AppTextStyles.statValue),
+                          NumberText('$completed / $total', style: AppTextStyles.statValue),
                         ],
                       ),
                     ),
@@ -84,7 +85,7 @@ class TaskCompletionRing extends ConsumerWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                 decoration: BoxDecoration(
                   border: Border(
-                    top: BorderSide(color: AppColors.chipUnselectedBorder.withOpacity(0.5)),
+                    top: BorderSide(color: AppColors.chipUnselectedBorder.withValues(alpha: 0.5)),
                   ),
                 ),
                 child: Row(

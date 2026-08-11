@@ -64,7 +64,7 @@ class _TagManagementScreenState extends ConsumerState<TagManagementScreen> {
                     )
                   : ListView.separated(
                       itemCount: filtered.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 8),
+                      separatorBuilder: (_, _) => const SizedBox(height: 8),
                       itemBuilder: (context, index) {
                         final tag = filtered[index];
                         return _TagRow(
@@ -126,7 +126,7 @@ class _TagManagementScreenState extends ConsumerState<TagManagementScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Etiketi Sil?'),
-        content: Text('"$name" etiketi kalıcı olarak silinecek.', style: const TextStyle(fontSize: 14)),
+        content: Text('"$name" etiketi kalıcı olarak silinecek.', style: const TextStyle(fontSize: 16)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
@@ -160,7 +160,7 @@ class _TagRow extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.cardBackground,
         borderRadius: BorderRadius.circular(AppSizes.taskCardRadius),
-        border: Border.all(color: AppColors.chipUnselectedBorder.withOpacity(0.5)),
+        border: Border.all(color: AppColors.chipUnselectedBorder.withValues(alpha: 0.5)),
       ),
       child: Row(
         children: [
@@ -170,7 +170,7 @@ class _TagRow extends StatelessWidget {
             decoration: BoxDecoration(color: color, shape: BoxShape.circle),
           ),
           const SizedBox(width: 12),
-          Expanded(child: Text(name, style: AppTextStyles.taskTitle.copyWith(fontSize: 14))),
+          Expanded(child: Text(name, style: AppTextStyles.taskTitle)),
           IconButton(
             icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
             onPressed: onDelete,

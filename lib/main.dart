@@ -58,13 +58,13 @@ class MantarOdakApp extends ConsumerWidget {
                     'lib/firebase_options.dart içindeki değerleri Firebase Console\'dan '
                     'aldığın gerçek proje bilgileriyle güncelle.',
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 14, height: 1.4),
+                    style: TextStyle(fontSize: 16, height: 1.5),
                   ),
                   const SizedBox(height: 12),
                   Text(
                     firebaseError!,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 11, color: AppColors.tabUnselectedText),
+                    style: const TextStyle(fontSize: 16, color: AppColors.tabUnselectedText),
                   ),
                 ],
               ),

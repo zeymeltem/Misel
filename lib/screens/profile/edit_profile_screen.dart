@@ -107,7 +107,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             onPressed: _save,
             child: const Text(
               'Kaydet',
-              style: TextStyle(color: AppColors.streakText, fontWeight: FontWeight.w700, fontSize: 15),
+              style: TextStyle(color: AppColors.streakText, fontWeight: FontWeight.w700, fontSize: 16),
             ),
           ),
         ],
@@ -126,7 +126,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       child: DecoratedBox(
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: Colors.black.withOpacity(0.35),
+                          color: Colors.black.withValues(alpha: 0.35),
                         ),
                         child: const Center(
                           child: SizedBox(
@@ -160,21 +160,21 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               label: 'Ad Soyad',
               controller: _nameController,
               hintText: 'Ad Soyad',
-              valueStyle: AppTextStyles.profileName.copyWith(fontSize: 16),
+              valueStyle: AppTextStyles.profileName,
             ),
             const SizedBox(height: 14),
             _EditCard(
               label: 'Kullanıcı Adı',
               controller: _usernameController,
               hintText: '@kullaniciadi',
-              valueStyle: AppTextStyles.taskTitle.copyWith(fontSize: 15),
+              valueStyle: AppTextStyles.taskTitle,
             ),
             const SizedBox(height: 14),
             _EditCard(
               label: 'Günlük Hedef (dk)',
               controller: _goalController,
               keyboardType: TextInputType.number,
-              valueStyle: AppTextStyles.streak.copyWith(fontSize: 15),
+              valueStyle: AppTextStyles.streak,
             ),
           ],
         ),
@@ -208,7 +208,7 @@ class _EditCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppSizes.statCardRadius - 2),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 3,
             offset: const Offset(0, 1),
           ),

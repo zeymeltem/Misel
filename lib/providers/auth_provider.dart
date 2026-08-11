@@ -57,6 +57,11 @@ class AuthFormNotifier extends Notifier<AuthFormState> {
         state = state.copyWith(errorMessage: passwordError);
         return;
       }
+      final fieldsError = validateRegistrationFields(name, username);
+      if (fieldsError != null) {
+        state = state.copyWith(errorMessage: fieldsError);
+        return;
+      }
     }
 
     state = state.copyWith(loading: true, errorMessage: null);
@@ -67,7 +72,7 @@ class AuthFormNotifier extends Notifier<AuthFormState> {
       } else {
         await repo.registerWithEmail(email, password);
         final uid = repo.currentUser?.uid;
-        if (uid != null && ((name?.trim().isNotEmpty ?? false) || (username?.trim().isNotEmpty ?? false))) {
+        if (uid != null) {
           await UserRepository().updateProfile(
             uid,
             name: name ?? '',
@@ -92,11 +97,16 @@ class AuthFormNotifier extends Notifier<AuthFormState> {
     }
   }
 
+  /// `user-not-found` durumunda da başarılıymış gibi null döner: e-postanın
+  /// sistemde kayıtlı olup olmadığını sızdırmamak için (email enumeration
+  /// koruması) — kayıtlı olmayan bir adres denendiğinde de aynı "gönderildi"
+  /// mesajı gösterilir.
   Future<String?> sendPasswordReset(String email) async {
     try {
       await ref.read(authRepositoryProvider).sendPasswordResetEmail(email);
       return null;
     } catch (e) {
+      if (e is FirebaseAuthException && e.code == 'user-not-found') return null;
       return mapAuthErrorToTurkish(e);
     }
   }
@@ -112,5 +122,15 @@ String? validatePasswordStrength(String password) {
   if (!RegExp(r'[A-Z]').hasMatch(password)) return 'Şifre en az bir büyük harf içermeli.';
   if (!RegExp(r'[a-z]').hasMatch(password)) return 'Şifre en az bir küçük harf içermeli.';
   if (!RegExp(r'[0-9]').hasMatch(password)) return 'Şifre en az bir rakam içermeli.';
+  return null;
+}
+
+/// Kayıt sırasında ad/kullanıcı adı boş bırakılırsa profil kalıcı olarak
+/// eksik kalır (bkz. `UserRepository.ensureUserDocument` — Firebase Auth
+/// tarafında e-posta/şifre kaydında displayName set edilmez). Bu yüzden
+/// login modunda değil, sadece register modunda zorunlu tutulur.
+String? validateRegistrationFields(String? name, String? username) {
+  if (name == null || name.trim().isEmpty) return 'Ad Soyad boş bırakılamaz.';
+  if (username == null || username.trim().isEmpty) return 'Kullanıcı adı boş bırakılamaz.';
   return null;
 }

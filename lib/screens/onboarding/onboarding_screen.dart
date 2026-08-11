@@ -105,13 +105,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         Text(
                           page.title,
                           textAlign: TextAlign.center,
-                          style: AppTextStyles.sectionTitle.copyWith(fontSize: 22),
+                          style: AppTextStyles.sectionTitle.copyWith(fontSize: 24),
                         ),
                         const SizedBox(height: 12),
                         Text(
                           page.body,
                           textAlign: TextAlign.center,
-                          style: AppTextStyles.legend.copyWith(fontSize: 14, height: 1.5),
+                          style: AppTextStyles.legend,
                         ),
                       ],
                     ),

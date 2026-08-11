@@ -1,76 +1,71 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 
-enum GrowthStage { spor, filiz, yarimBoy, tamBoy }
+enum GrowthStage { spor, filiz, tamBoy }
 
 extension GrowthStageX on GrowthStage {
   static GrowthStage fromProgress(double progress) {
-    if (progress < 0.25) return GrowthStage.spor;
-    if (progress < 0.5) return GrowthStage.filiz;
-    if (progress < 0.75) return GrowthStage.yarimBoy;
+    if (progress < 1 / 3) return GrowthStage.spor;
+    if (progress < 2 / 3) return GrowthStage.filiz;
     return GrowthStage.tamBoy;
   }
 
   String get label => switch (this) {
         GrowthStage.spor => 'Spor',
         GrowthStage.filiz => 'Filiz',
-        GrowthStage.yarimBoy => 'Yarım Boy',
         GrowthStage.tamBoy => 'Tam Boy',
       };
 
   double get scale => switch (this) {
-        GrowthStage.spor => 0.35,
-        GrowthStage.filiz => 0.60,
-        GrowthStage.yarimBoy => 0.82,
+        GrowthStage.spor => 0.45,
+        GrowthStage.filiz => 0.72,
         GrowthStage.tamBoy => 1.0,
+      };
+
+  int get index => switch (this) {
+        GrowthStage.spor => 0,
+        GrowthStage.filiz => 1,
+        GrowthStage.tamBoy => 2,
       };
 }
 
 class MushroomGrowthRing extends StatelessWidget {
   final double progress;
-  final String? mushroomSprite;
+
+  /// 4 büyüme evresinin sprite yolları: [spor, filiz, yarımBoy, tamBoy].
+  /// bkz. [MushroomCatalogItem.growthSprites]. null ise emoji fallback.
+  final List<String>? growthSprites;
 
   const MushroomGrowthRing({
     super.key,
     required this.progress,
-    this.mushroomSprite,
+    this.growthSprites,
   });
 
   @override
   Widget build(BuildContext context) {
     final stage = GrowthStageX.fromProgress(progress);
+    final currentSprite = growthSprites != null ? growthSprites![stage.index] : null;
     return SizedBox(
       width: AppSizes.ringSize,
       height: AppSizes.ringSize,
       child: Stack(
         alignment: Alignment.center,
         children: [
-          // Outer Glow / Ring Shadow
+          // Square backdrop for the sprite (frame matches sprite's own square shape)
           Container(
-            width: AppSizes.ringSize - 10,
-            height: AppSizes.ringSize - 10,
+            width: 220,
+            height: 220,
             decoration: BoxDecoration(
-              shape: BoxShape.circle,
               color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.progressFill.withOpacity(0.12),
+                  color: AppColors.progressFill.withValues(alpha: 0.12),
                   blurRadius: 20,
                   spreadRadius: 2,
                 )
               ],
-            ),
-          ),
-          // Circular Progress Indicator
-          SizedBox(
-            width: AppSizes.ringSize,
-            height: AppSizes.ringSize,
-            child: CircularProgressIndicator(
-              value: progress,
-              strokeWidth: 10,
-              backgroundColor: AppColors.progressTrackBg,
-              valueColor: const AlwaysStoppedAnimation<Color>(AppColors.progressFill),
-              strokeCap: StrokeCap.round,
             ),
           ),
           // Center Mushroom & Time
@@ -79,27 +74,41 @@ class MushroomGrowthRing extends StatelessWidget {
             children: [
               // Growing Mushroom
               SizedBox(
-                height: 72,
+                width: 190,
+                height: 190,
                 child: Center(
-                  child: AnimatedScale(
-                    scale: stage.scale,
-                    duration: const Duration(milliseconds: 500),
-                    curve: Curves.elasticOut,
-                    child: mushroomSprite != null
-                        ? Image.asset(
-                            mushroomSprite!,
-                            width: 64,
-                            height: 64,
-                            fit: BoxFit.contain,
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 400),
+                    transitionBuilder: (child, animation) => ScaleTransition(
+                      scale: animation,
+                      child: FadeTransition(opacity: animation, child: child),
+                    ),
+                    child: currentSprite != null
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: Image.asset(
+                              currentSprite,
+                              key: ValueKey(currentSprite),
+                              width: 190,
+                              height: 190,
+                              fit: BoxFit.cover,
+                              filterQuality: FilterQuality.none,
+                              errorBuilder: (context, error, stack) => const Text(
+                                '🍄',
+                                key: ValueKey('fallback'),
+                                style: TextStyle(fontSize: 140),
+                              ),
+                            ),
                           )
                         : const Text(
                             '🍄',
-                            style: TextStyle(fontSize: 48),
+                            key: ValueKey('fallback'),
+                            style: TextStyle(fontSize: 140),
                           ),
                   ),
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 10),
               // Growth stage badge
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -109,7 +118,7 @@ class MushroomGrowthRing extends StatelessWidget {
                 ),
                 child: Text(
                   stage.label,
-                  style: AppTextStyles.bannerText.copyWith(fontSize: 11),
+                  style: AppTextStyles.bannerText.copyWith(fontSize: 8),
                 ),
               ),
             ],

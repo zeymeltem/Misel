@@ -13,13 +13,90 @@ rules_version = '2';
 // users/{uid}/... verisine erişebilir (tüm alt koleksiyonlar dahil:
 // sessions, tags, tasks, taskLogs, ownedMushrooms). Başka bir kullanıcının
 // verisine ne okuma ne yazma erişimi vardır.
+//
+// users/{uid} dokümanı ayrıca alan bazlı tip/aralık doğrulamasından geçer
+// (isValidUserDoc): amaç, istemci kodunu (UserRepository'deki transaction'lar)
+// atlayıp Firestore'a doğrudan yazarak coin/streak/mantar sahipliği gibi
+// oyun verisini kurcalamayı zorlaştırmak. Bu, sunucu taraflı doğrulama
+// (Cloud Functions) kadar güçlü değildir — sadece tip/aralık/alan adı
+// kontrolü yapar, "coin artışı gerçekten bir seans bitirmekten mi geldi"
+// gibi iş kuralı doğrulaması yapamaz. Cloud Functions için Blaze planı
+// (ödeme yöntemi) gerektiğinden bilinçli olarak bu yol seçilmedi.
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /users/{uid} {
-      allow read, write: if request.auth != null && request.auth.uid == uid;
 
-      match /{document=**} {
-        allow read, write: if request.auth != null && request.auth.uid == uid;
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    function isOptionalString(value, maxLen) {
+      return value == null || (value is string && value.size() <= maxLen);
+    }
+
+    function isOptionalTimestamp(value) {
+      return value == null || value is timestamp;
+    }
+
+    function isBoundedInt(value, minVal, maxVal) {
+      return value is int && value >= minVal && value <= maxVal;
+    }
+
+    function isValidUserDoc(data) {
+      return data.keys().hasOnly([
+          'displayName', 'username', 'dailyGoalMinutes', 'totalCoins',
+          'currentStreak', 'longestStreak', 'lastSuccessDate', 'lastOpenDate',
+          'selectedMushroomTypeId', 'notificationsEnabled', 'defaultSessionMinutes',
+          'dailyReminderEnabled', 'dailyReminderHour', 'dailyReminderMinute',
+          'hasSeenOnboarding', 'photoBase64'
+        ]) &&
+        (!('displayName' in data) || isOptionalString(data.displayName, 60)) &&
+        (!('username' in data) || isOptionalString(data.username, 30)) &&
+        (!('dailyGoalMinutes' in data) || isBoundedInt(data.dailyGoalMinutes, 1, 1440)) &&
+        (!('totalCoins' in data) || isBoundedInt(data.totalCoins, 0, 10000000)) &&
+        (!('currentStreak' in data) || isBoundedInt(data.currentStreak, 0, 100000)) &&
+        (!('longestStreak' in data) || isBoundedInt(data.longestStreak, 0, 100000)) &&
+        (!('lastSuccessDate' in data) || isOptionalTimestamp(data.lastSuccessDate)) &&
+        (!('lastOpenDate' in data) || isOptionalTimestamp(data.lastOpenDate)) &&
+        (!('selectedMushroomTypeId' in data) || isOptionalString(data.selectedMushroomTypeId, 30)) &&
+        (!('notificationsEnabled' in data) || data.notificationsEnabled is bool) &&
+        (!('defaultSessionMinutes' in data) || isBoundedInt(data.defaultSessionMinutes, 1, 1440)) &&
+        (!('dailyReminderEnabled' in data) || data.dailyReminderEnabled is bool) &&
+        (!('dailyReminderHour' in data) || isBoundedInt(data.dailyReminderHour, 0, 23)) &&
+        (!('dailyReminderMinute' in data) || isBoundedInt(data.dailyReminderMinute, 0, 59)) &&
+        (!('hasSeenOnboarding' in data) || data.hasSeenOnboarding is bool) &&
+        (!('photoBase64' in data) || isOptionalString(data.photoBase64, 400000));
+    }
+
+    function isKnownMushroomId(id) {
+      return id in ['starter', 'common', 'rare', 'legendary'];
+    }
+
+    function isValidOwnedMushroomData(data) {
+      return data.keys().hasOnly(['ownedAt']) && data.ownedAt is timestamp;
+    }
+
+    match /users/{uid} {
+      allow read: if isOwner(uid);
+      allow create, update: if isOwner(uid) && isValidUserDoc(request.resource.data);
+      allow delete: if isOwner(uid);
+
+      match /ownedMushrooms/{mushroomId} {
+        allow read, delete: if isOwner(uid);
+        allow create, update: if isOwner(uid) && isKnownMushroomId(mushroomId) &&
+          isValidOwnedMushroomData(request.resource.data);
+      }
+
+      match /sessions/{document=**} {
+        allow read, write: if isOwner(uid);
+      }
+      match /tags/{document=**} {
+        allow read, write: if isOwner(uid);
+      }
+      match /tasks/{document=**} {
+        allow read, write: if isOwner(uid);
+      }
+      match /taskLogs/{document=**} {
+        allow read, write: if isOwner(uid);
       }
     }
   }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../data/mushroom_catalog.dart';
 import '../theme/app_theme.dart';
+import 'pixel_number.dart';
 
 /// Tek bir mağaza kartı: mantar görseli + fiyat (veya "Sahip" rozeti).
 /// Sadece verilen [mushroom] verisini gösterir, satın alma mantığı içermez.
@@ -50,12 +51,12 @@ class ShopItemCard extends StatelessWidget {
           color: AppColors.cardBackground,
           borderRadius: BorderRadius.circular(AppSizes.shopItemRadius),
           border: Border.all(
-            color: isOwned ? AppColors.chipUnselectedBorder : tierColor.withOpacity(0.5),
+            color: isOwned ? AppColors.chipUnselectedBorder : tierColor.withValues(alpha: 0.5),
             width: isOwned ? 1 : 2,
           ),
           boxShadow: [
             BoxShadow(
-              color: tierColor.withOpacity(isOwned ? 0.04 : 0.1),
+              color: tierColor.withValues(alpha: isOwned ? 0.04 : 0.1),
               blurRadius: isOwned ? 4 : 8,
               offset: const Offset(0, 4),
             ),
@@ -68,13 +69,13 @@ class ShopItemCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
-                color: tierColor.withOpacity(0.12),
+                color: tierColor.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(6),
               ),
               child: Text(
                 tierLabel,
                 style: TextStyle(
-                  fontSize: 9,
+                  fontSize: 8,
                   fontWeight: FontWeight.bold,
                   color: tierColor,
                   letterSpacing: 0.2,
@@ -85,7 +86,13 @@ class ShopItemCard extends StatelessWidget {
             // Mushroom Sprite
             Hero(
               tag: 'shop_mushroom_${mushroom.id}',
-              child: Image.asset(mushroom.spriteAsset, width: 44, height: 44),
+              child: Image.asset(
+                mushroom.spriteAsset,
+                width: 44,
+                height: 44,
+                fit: BoxFit.fill,
+                filterQuality: FilterQuality.none,
+              ),
             ),
             const SizedBox(height: 10),
             // Name
@@ -94,7 +101,8 @@ class ShopItemCard extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: AppTextStyles.tab.copyWith(
-                fontSize: 12,
+                fontSize: 16,
+                letterSpacing: -0.5,
                 color: AppColors.taskTitle,
               ),
             ),
@@ -104,12 +112,12 @@ class ShopItemCard extends StatelessWidget {
                 ? Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.check_circle, size: 12, color: AppColors.shopIconCommon.withOpacity(0.8)),
+                      Icon(Icons.check_circle, size: 12, color: AppColors.shopIconCommon.withValues(alpha: 0.8)),
                       const SizedBox(width: 4),
                       const Text(
                         'Açık',
                         style: TextStyle(
-                          fontSize: 11,
+                          fontSize: 8,
                           fontWeight: FontWeight.w700,
                           color: AppColors.shopIconCommon,
                         ),
@@ -122,11 +130,12 @@ class ShopItemCard extends StatelessWidget {
                     children: [
                       const Icon(Icons.monetization_on, size: 13, color: AppColors.coinBadgeText),
                       const SizedBox(width: 4),
-                      Text(
+                      NumberText(
                         '${mushroom.price}',
                         style: AppTextStyles.shopPrice.copyWith(
                           color: AppColors.coinBadgeText,
-                          fontSize: 12,
+                          fontSize: 16,
+                          letterSpacing: -0.5,
                         ),
                       ),
                     ],

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
+import 'pixel_number.dart';
 
 /// Yüzdelik donut halka: dıştan renkli ilerleme, ortada metin. Görev
 /// Tamamlama kartında, görev geçmişi liste öğelerinde ve gün detayı
@@ -17,7 +18,7 @@ class PercentRing extends StatelessWidget {
     required this.size,
     required this.percent,
     required this.centerText,
-    this.centerFontSize = 18,
+    this.centerFontSize = 16,
     this.strokeWidth = 10,
   });
 
@@ -36,7 +37,7 @@ class PercentRing extends StatelessWidget {
             valueColor: const AlwaysStoppedAnimation(AppColors.streakText),
             strokeCap: StrokeCap.round,
           ),
-          Text(
+          NumberText(
             centerText,
             style: AppTextStyles.statValue.copyWith(fontSize: centerFontSize),
           ),

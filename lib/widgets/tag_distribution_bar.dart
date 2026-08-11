@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/stats_provider.dart';
 import '../theme/app_theme.dart';
+import 'pixel_number.dart';
 
 /// Bu hafta etiketlere göre harcanan zamanın oransal dağılımı.
 class TagDistributionBar extends ConsumerWidget {
@@ -19,13 +20,13 @@ class TagDistributionBar extends ConsumerWidget {
         borderRadius: BorderRadius.circular(AppSizes.statCardRadius),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 10,
             offset: const Offset(0, 4),
           )
         ],
         border: Border.all(
-          color: AppColors.chipUnselectedBorder.withOpacity(0.5),
+          color: AppColors.chipUnselectedBorder.withValues(alpha: 0.5),
           width: 1,
         ),
       ),
@@ -51,7 +52,7 @@ class TagDistributionBar extends ConsumerWidget {
               padding: EdgeInsets.symmetric(vertical: 12),
               child: Text(
                 'Bu hafta etiketli seans yok.',
-                style: TextStyle(fontSize: 12, color: AppColors.tabUnselectedText),
+                style: TextStyle(fontSize: 16, color: AppColors.tabUnselectedText),
               ),
             )
           else ...[
@@ -95,16 +96,16 @@ class TagDistributionBar extends ConsumerWidget {
                     Text(
                       share.tagName,
                       style: const TextStyle(
-                        fontSize: 12,
+                        fontSize: 16,
                         fontWeight: FontWeight.w500,
                         color: AppColors.taskTitle,
                       ),
                     ),
                     const SizedBox(width: 4),
-                    Text(
+                    NumberText(
                       '%${share.percent.round()}',
                       style: const TextStyle(
-                        fontSize: 11,
+                        fontSize: 8,
                         color: AppColors.tabUnselectedText,
                       ),
                     ),

@@ -5,6 +5,7 @@ import '../../providers/stats_provider.dart';
 import '../../providers/task_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/percent_ring.dart';
+import '../../widgets/pixel_number.dart';
 import 'task_history_screen.dart' show formatHistoryDay;
 
 /// Geçmişte belirli bir günün görev listesi ve odaklanma süresi. Salt-okunur
@@ -26,7 +27,7 @@ class DayDetailScreen extends ConsumerWidget {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.background,
-        title: Text(formatHistoryDay(date)),
+        title: NumberText(formatHistoryDay(date)),
       ),
       body: ListView(
               padding: const EdgeInsets.all(AppSizes.screenPadding),
@@ -36,7 +37,7 @@ class DayDetailScreen extends ConsumerWidget {
                   decoration: BoxDecoration(
                     color: AppColors.cardBackground,
                     borderRadius: BorderRadius.circular(AppSizes.statCardRadius),
-                    border: Border.all(color: AppColors.chipUnselectedBorder.withOpacity(0.5)),
+                    border: Border.all(color: AppColors.chipUnselectedBorder.withValues(alpha: 0.5)),
                   ),
                   child: Row(
                     children: [
@@ -44,19 +45,19 @@ class DayDetailScreen extends ConsumerWidget {
                         size: 56,
                         percent: percent,
                         centerText: '%${percent.round()}',
-                        centerFontSize: 12,
+                        centerFontSize: 16,
                         strokeWidth: 6,
                       ),
                       const SizedBox(width: 16),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
+                          NumberText(
                             '$completed / $total görev tamamlandı',
                             style: AppTextStyles.taskTitle.copyWith(fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 2),
-                          Text(
+                          NumberText(
                             'Odaklanma süresi: ${focusTime.inMinutes} dk',
                             style: AppTextStyles.statLabel,
                           ),
@@ -72,7 +73,7 @@ class DayDetailScreen extends ConsumerWidget {
                     decoration: BoxDecoration(
                       color: AppColors.cardBackground,
                       borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: AppColors.chipUnselectedBorder.withOpacity(0.5)),
+                      border: Border.all(color: AppColors.chipUnselectedBorder.withValues(alpha: 0.5)),
                     ),
                     child: Row(
                       children: [
@@ -99,7 +100,7 @@ class DayDetailScreen extends ConsumerWidget {
                           child: Text(
                             task.title,
                             style: TextStyle(
-                              fontSize: 14,
+                              fontSize: 16,
                               fontWeight: FontWeight.w600,
                               color: task.completedToday
                                   ? AppColors.tabUnselectedText

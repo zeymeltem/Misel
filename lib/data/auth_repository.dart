@@ -5,7 +5,12 @@ import 'package:google_sign_in/google_sign_in.dart';
 /// Kimlik doğrulama işlemleri tek bu noktadan geçer. UI doğrudan
 /// [FirebaseAuth]'a dokunmaz.
 class AuthRepository {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseAuth _auth;
+
+  /// [auth] verilmezse gerçek Firebase kullanılır; testler sahte
+  /// (mock) bir [FirebaseAuth] enjekte edip gerçek sunucuya dokunmadan
+  /// bu sınıfı çalıştırabilir.
+  AuthRepository({FirebaseAuth? auth}) : _auth = auth ?? FirebaseAuth.instance;
 
   Stream<User?> authStateChanges() => _auth.authStateChanges();
 
@@ -118,8 +123,9 @@ String mapAuthErrorToTurkish(Object error) {
   if (error is! FirebaseAuthException) return 'Bir şeyler ters gitti. Tekrar dene.';
 
   return switch (error.code) {
-    'wrong-password' || 'invalid-credential' => 'E-posta veya şifre hatalı.',
-    'user-not-found' => 'Bu e-posta ile kayıtlı bir kullanıcı bulunamadı.',
+    // 'user-not-found' bilerek 'wrong-password' ile aynı mesaja bağlanıyor:
+    // ayrı mesaj kayıtlı e-postaları enumeration saldırısına açar.
+    'wrong-password' || 'invalid-credential' || 'user-not-found' => 'E-posta veya şifre hatalı.',
     'invalid-email' => 'Geçersiz e-posta adresi.',
     'weak-password' => 'Şifre çok zayıf. En az 6 karakter kullan.',
     'email-already-in-use' => 'Bu e-posta zaten kayıtlı. Giriş yapmayı dene.',

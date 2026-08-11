@@ -15,13 +15,13 @@ class AccountSection extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Hesap', style: AppTextStyles.sectionTitle.copyWith(fontSize: 18)),
+        Text('Hesap', style: AppTextStyles.sectionTitle.copyWith(fontSize: 16)),
         const SizedBox(height: 12),
         Container(
           decoration: BoxDecoration(
             color: AppColors.cardBackground,
             borderRadius: BorderRadius.circular(AppSizes.statCardRadius),
-            border: Border.all(color: AppColors.chipUnselectedBorder.withOpacity(0.5)),
+            border: Border.all(color: AppColors.chipUnselectedBorder.withValues(alpha: 0.5)),
           ),
           child: Column(
             children: [
@@ -30,7 +30,7 @@ class AccountSection extends ConsumerWidget {
                 label: 'Çıkış yap',
                 onTap: () => _signOut(context, ref),
               ),
-              Divider(height: 1, color: AppColors.chipUnselectedBorder.withOpacity(0.5)),
+              Divider(height: 1, color: AppColors.chipUnselectedBorder.withValues(alpha: 0.5)),
               _AccountRow(
                 icon: Icons.delete_forever_rounded,
                 label: 'Hesabımı sil',
@@ -67,7 +67,7 @@ class AccountSection extends ConsumerWidget {
         content: const Text(
           'Bu işlem geri alınamaz. Tüm seansların, görevlerin, etiketlerin ve '
           'bahçen kalıcı olarak silinecek.',
-          style: TextStyle(fontSize: 14),
+          style: TextStyle(fontSize: 16),
         ),
         actions: [
           TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Vazgeç')),
@@ -128,7 +128,7 @@ class AccountSection extends ConsumerWidget {
           children: [
             const Text(
               'Güvenlik için hesabını silmeden önce şifreni tekrar girmen gerekiyor.',
-              style: TextStyle(fontSize: 13),
+              style: TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 12),
             TextField(

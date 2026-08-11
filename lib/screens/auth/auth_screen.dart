@@ -51,7 +51,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   Text(
                     'Mantar Odak',
                     textAlign: TextAlign.center,
-                    style: AppTextStyles.sectionTitle.copyWith(fontSize: 26),
+                    style: AppTextStyles.sectionTitle.copyWith(fontSize: 24),
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -72,7 +72,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                       ),
                       child: Text(
                         formState.errorMessage!,
-                        style: TextStyle(color: Colors.red.shade700, fontSize: 13),
+                        style: TextStyle(color: Colors.red.shade700, fontSize: 16),
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -121,7 +121,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                     const SizedBox(height: 6),
                     Text(
                       'En az 8 karakter; büyük/küçük harf ve rakam içermeli.',
-                      style: AppTextStyles.legend.copyWith(fontSize: 12),
+                      style: AppTextStyles.legend,
                     ),
                   ],
                   const SizedBox(height: 8),
@@ -129,7 +129,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                     alignment: Alignment.centerRight,
                     child: TextButton(
                       onPressed: formState.loading ? null : () => _showForgotPasswordDialog(notifier),
-                      child: const Text('Şifremi unuttum', style: TextStyle(fontSize: 13)),
+                      child: const Text('Şifremi unuttum', style: TextStyle(fontSize: 16)),
                     ),
                   ),
                   const SizedBox(height: 12),

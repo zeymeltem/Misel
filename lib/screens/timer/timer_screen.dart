@@ -4,9 +4,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/economy_provider.dart';
 import '../../providers/tag_provider.dart';
 import '../../providers/timer_provider.dart';
+import '../../services/garden_layout_service.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/mushroom_growth_ring.dart';
 import '../../widgets/mushroom_picker.dart';
+import '../../widgets/pixel_number.dart';
+import '../../widgets/pixel_progress_bar.dart';
 import '../../widgets/streak_badge.dart';
 import '../../widgets/tag_selector.dart';
 import '../../widgets/today_tasks_section.dart';
@@ -104,6 +107,17 @@ class _SetupView extends ConsumerWidget {
       });
     }
 
+    // Etiket seçimi hiçbir zaman boş kalmasın: kullanıcı seçmediyse
+    // (veya seçimi kaldırdıysa) ilk etiket varsayılan olarak atanır.
+    final tags = ref.watch(tagsProvider).value ?? [];
+    if (timer.tagId == null && tags.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (ref.read(timerProvider).tagId == null) {
+          notifier.setTag(tags.first.id);
+        }
+      });
+    }
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppSizes.screenPadding),
       child: Column(
@@ -149,7 +163,7 @@ class _SetupView extends ConsumerWidget {
             child: Column(
               children: [
                 const SizedBox(height: 8),
-                Text(
+                NumberText(
                   '${timer.targetMinutes} dk',
                   style: AppTextStyles.durationValue.copyWith(
                     color: AppColors.tabSelectedBg,
@@ -166,7 +180,7 @@ class _SetupView extends ConsumerWidget {
                     children: [
                       const Icon(Icons.monetization_on, size: 14, color: AppColors.coinPreviewText),
                       const SizedBox(width: 4),
-                      Text(
+                      NumberText(
                         '+${timer.estimatedCoins} coin kazanacaksın',
                         style: AppTextStyles.coinPreview,
                       ),
@@ -181,7 +195,7 @@ class _SetupView extends ConsumerWidget {
                     trackHeight: 6.0,
                     thumbColor: AppColors.tabSelectedBg,
                     thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10.0),
-                    overlayColor: AppColors.tabSelectedBg.withOpacity(0.12),
+                    overlayColor: AppColors.tabSelectedBg.withValues(alpha: 0.12),
                     overlayShape: const RoundSliderOverlayShape(overlayRadius: 20.0),
                   ),
                   child: Slider(
@@ -267,40 +281,33 @@ class _ActiveView extends ConsumerWidget {
           Center(
             child: MushroomGrowthRing(
               progress: timer.progress,
-              mushroomSprite: selectedMushroom?.spriteAsset,
+              growthSprites: selectedMushroom?.growthSprites,
             ),
           ),
-          const SizedBox(height: 16),
-          Text(
-            _formatDuration(timer.remaining),
-            style: const TextStyle(
-              fontSize: 40,
-              fontWeight: FontWeight.w700,
-              fontFeatures: [FontFeature.tabularFigures()],
-              color: AppColors.taskTitle,
+          const SizedBox(height: 20),
+          // Süre ilerlemesi: mantar kartından ayrı, kendi pixel-art tasarımı
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: AppColors.gardenBanner,
+              borderRadius: BorderRadius.circular(AppSizes.taskCardRadius),
             ),
+            child: PixelProgressBar(progress: timer.progress),
+          ),
+          const SizedBox(height: 16),
+          NumberText(
+            _formatDuration(timer.remaining),
+            style: AppTextStyles.timerClock,
           ),
           const SizedBox(height: 24),
 
-          // Focus Info Chips
-          Wrap(
-            alignment: WrapAlignment.center,
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              if (tagName != null)
-                _InfoChip(
-                  text: tagName,
-                  bg: AppColors.chipSelectedBg,
-                  textColor: AppColors.chipSelectedText,
-                ),
-              _InfoChip(
-                text: '${timer.targetMinutes} dk',
-                bg: AppColors.chipSelectedBg,
-                textColor: AppColors.chipSelectedText,
-              ),
-            ],
-          ),
+          // Focus Info Chip (sadece etiket)
+          if (tagName != null)
+            _InfoChip(
+              text: tagName,
+              bg: AppColors.chipSelectedBg,
+              textColor: AppColors.chipSelectedText,
+            ),
           const SizedBox(height: 24),
 
           // Cancel/Give Up button with warning popup
@@ -337,7 +344,7 @@ class _ActiveView extends ConsumerWidget {
         title: const Text('Seanstan Vazgeç?'),
         content: const Text(
           'Eğer şimdi vazgeçersen büyütmekte olduğun mantar çürüyecek ve bu seans kaydedilmeyecek. Yine de vazgeçmek istiyor musun?',
-          style: TextStyle(fontSize: 14),
+          style: TextStyle(fontSize: 16),
         ),
         actions: [
           TextButton(
@@ -369,7 +376,7 @@ class _InfoChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(AppSizes.chipRadius)),
-      child: Text(text, style: AppTextStyles.chip.copyWith(color: textColor)),
+      child: NumberText(text, style: AppTextStyles.chip.copyWith(color: textColor)),
     );
   }
 }
@@ -401,7 +408,7 @@ class _ResultView extends ConsumerWidget {
             borderRadius: BorderRadius.circular(AppSizes.cardRadius),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha: 0.05),
                 blurRadius: 15,
                 offset: const Offset(0, 8),
               )
@@ -418,7 +425,13 @@ class _ResultView extends ConsumerWidget {
                 ),
                 const SizedBox(height: 8),
                 if (mushroom != null)
-                  Image.asset(mushroom.spriteAsset, width: 80, height: 80)
+                  Image.asset(
+                    mushroom.spriteAsset,
+                    width: 80,
+                    height: 80,
+                    fit: BoxFit.fill,
+                    filterQuality: FilterQuality.none,
+                  )
                 else
                   const Text('🍄', style: TextStyle(fontSize: 64)),
                 const SizedBox(height: 16),
@@ -436,7 +449,7 @@ class _ResultView extends ConsumerWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   decoration: BoxDecoration(
-                    color: AppColors.coinBadge.withOpacity(0.2),
+                    color: AppColors.coinBadge.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Row(
@@ -444,7 +457,7 @@ class _ResultView extends ConsumerWidget {
                     children: [
                       const Icon(Icons.monetization_on, color: AppColors.coinBadgeText),
                       const SizedBox(width: 6),
-                      Text(
+                      NumberText(
                         '+$coinsEarned Coin',
                         style: const TextStyle(
                           fontSize: 16,
@@ -456,9 +469,16 @@ class _ResultView extends ConsumerWidget {
                   ),
                 ),
               ] else ...[
-                const Text(
-                  '🥀',
-                  style: TextStyle(fontSize: 72),
+                Image.asset(
+                  rottenMushroomSprite,
+                  width: 140,
+                  height: 140,
+                  fit: BoxFit.fill,
+                  filterQuality: FilterQuality.none,
+                  errorBuilder: (context, error, stack) => const Text(
+                    '🥀',
+                    style: TextStyle(fontSize: 72),
+                  ),
                 ),
                 const SizedBox(height: 16),
                 const Text(
@@ -484,7 +504,7 @@ class _ResultView extends ConsumerWidget {
                 ),
                 child: const Text(
                   'Tamam',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
               ),
             ],
@@ -516,7 +536,7 @@ class _SetupCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppSizes.cardRadius - 4),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -534,7 +554,6 @@ class _SetupCard extends StatelessWidget {
                 style: AppTextStyles.fieldLabel.copyWith(
                   color: AppColors.taskTitle,
                   fontWeight: FontWeight.bold,
-                  fontSize: 14,
                 ),
               ),
             ],

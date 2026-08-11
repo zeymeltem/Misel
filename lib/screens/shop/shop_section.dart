@@ -5,6 +5,7 @@ import '../../data/mushroom_catalog.dart';
 import '../../data/user_repository.dart' show PurchaseResult;
 import '../../providers/economy_provider.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/pixel_number.dart';
 import '../../widgets/shop_item_card.dart';
 
 /// Ana sayfanın alt kısmı: mağazadaki mantar türleri, satın alma burada tetiklenir.
@@ -61,18 +62,24 @@ class ShopSection extends ConsumerWidget {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Image.asset(mushroom.spriteAsset, width: 64, height: 64),
+            Image.asset(
+              mushroom.spriteAsset,
+              width: 64,
+              height: 64,
+              fit: BoxFit.fill,
+              filterQuality: FilterQuality.none,
+            ),
             const SizedBox(height: 12),
             Text(
               '${mushroom.name} mantarını satın almak istiyor musunuz?',
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 14),
+              style: const TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 12),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
-                color: AppColors.coinBadge.withOpacity(0.2),
+                color: AppColors.coinBadge.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
@@ -81,7 +88,7 @@ class ShopSection extends ConsumerWidget {
                 children: [
                   const Icon(Icons.monetization_on, size: 20, color: AppColors.coinBadgeText),
                   const SizedBox(width: 6),
-                  Text(
+                  NumberText(
                     '${mushroom.price} Coin',
                     style: const TextStyle(
                       fontSize: 16,

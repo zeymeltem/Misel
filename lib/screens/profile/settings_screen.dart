@@ -60,7 +60,7 @@ class SettingsScreen extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Bildirimler', style: AppTextStyles.sectionTitle.copyWith(fontSize: 18)),
+                  Text('Bildirimler', style: AppTextStyles.sectionTitle.copyWith(fontSize: 16)),
                   const SizedBox(height: 12),
                   _SettingsCard(
                     child: SwitchListTile(
@@ -76,7 +76,7 @@ class SettingsScreen extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  Text('Odaklanma', style: AppTextStyles.sectionTitle.copyWith(fontSize: 18)),
+                  Text('Odaklanma', style: AppTextStyles.sectionTitle.copyWith(fontSize: 16)),
                   const SizedBox(height: 12),
                   _SettingsCard(
                     child: Column(
@@ -114,7 +114,7 @@ class SettingsScreen extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  Text('Seri Hatırlatması', style: AppTextStyles.sectionTitle.copyWith(fontSize: 18)),
+                  Text('Seri Hatırlatması', style: AppTextStyles.sectionTitle.copyWith(fontSize: 16)),
                   const SizedBox(height: 12),
                   _SettingsCard(
                     child: Column(
@@ -164,7 +164,7 @@ class _SettingsCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppSizes.statCardRadius - 2),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 3,
             offset: const Offset(0, 1),
           ),

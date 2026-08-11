@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
+import 'pixel_number.dart';
 
 /// Etiket + değer + simge gösteren küçük istatistik kartı.
 class StatCard extends StatelessWidget {
@@ -27,13 +28,13 @@ class StatCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppSizes.statCardRadius),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.02),
+              color: Colors.black.withValues(alpha: 0.02),
               blurRadius: 8,
               offset: const Offset(0, 4),
             )
           ],
           border: Border.all(
-            color: AppColors.chipUnselectedBorder.withOpacity(0.5),
+            color: AppColors.chipUnselectedBorder.withValues(alpha: 0.5),
             width: 1,
           ),
         ),
@@ -47,12 +48,12 @@ class StatCard extends StatelessWidget {
                     label,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: AppTextStyles.statLabel.copyWith(fontSize: 11),
+                    style: AppTextStyles.statLabel.copyWith(fontSize: 8),
                   ),
                   const SizedBox(height: 8),
-                  Text(
+                  NumberText(
                     value,
-                    style: AppTextStyles.statValue.copyWith(fontSize: 18),
+                    style: AppTextStyles.statValue.copyWith(fontSize: 16),
                   ),
                 ],
               ),
@@ -60,7 +61,7 @@ class StatCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: iconColor.withOpacity(0.1),
+                color: iconColor.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(

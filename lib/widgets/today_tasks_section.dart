@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/task_provider.dart';
 import '../services/task_service.dart';
 import '../theme/app_theme.dart';
+import 'pixel_number.dart';
 
 /// "Bugün görevleri": günlük rutinler + tek seferlik görevler, işaretlenebilir.
 ///
@@ -32,9 +33,9 @@ class TodayTasksSection extends ConsumerWidget {
                   color: AppColors.gardenBanner,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Text(
+                child: NumberText(
                   '${tasks.where((t) => t.completedToday).length}/${tasks.length} tamamlandı',
-                  style: AppTextStyles.bannerText.copyWith(fontSize: 11),
+                  style: AppTextStyles.bannerText.copyWith(fontSize: 8),
                 ),
               ),
           ],
@@ -49,11 +50,11 @@ class TodayTasksSection extends ConsumerWidget {
               decoration: BoxDecoration(
                 color: AppColors.cardBackground,
                 borderRadius: BorderRadius.circular(AppSizes.taskCardRadius),
-                border: Border.all(color: AppColors.chipUnselectedBorder.withOpacity(0.5)),
+                border: Border.all(color: AppColors.chipUnselectedBorder.withValues(alpha: 0.5)),
               ),
               child: const Text(
                 'Bugün için planlanmış bir görev yok. Yeni bir görev ekleyerek başlayabilirsin!',
-                style: TextStyle(fontSize: 12, color: AppColors.tabUnselectedText, height: 1.4),
+                style: TextStyle(fontSize: 16, color: AppColors.tabUnselectedText, height: 1.5),
               ),
             ),
           ),
@@ -97,7 +98,7 @@ Future<bool> _confirmDelete(BuildContext context) async {
       title: const Text('Görevi Sil?'),
       content: const Text(
         'Bu görev ve tamamlanma geçmişi kalıcı olarak silinecek.',
-        style: TextStyle(fontSize: 14),
+        style: TextStyle(fontSize: 16),
       ),
       actions: [
         TextButton(
@@ -132,15 +133,15 @@ class _TaskRow extends ConsumerWidget {
           borderRadius: BorderRadius.circular(AppSizes.taskCardRadius),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.015),
+              color: Colors.black.withValues(alpha: 0.015),
               blurRadius: 6,
               offset: const Offset(0, 2),
             ),
           ],
           border: Border.all(
             color: task.completedToday
-                ? AppColors.chipUnselectedBorder.withOpacity(0.3)
-                : AppColors.chipUnselectedBorder.withOpacity(0.6),
+                ? AppColors.chipUnselectedBorder.withValues(alpha: 0.3)
+                : AppColors.chipUnselectedBorder.withValues(alpha: 0.6),
             width: 1,
           ),
         ),
@@ -154,7 +155,6 @@ class _TaskRow extends ConsumerWidget {
                 style: AppTextStyles.taskTitle.copyWith(
                   color: task.completedToday ? AppColors.taskTitleDone : AppColors.taskTitle,
                   decoration: task.completedToday ? TextDecoration.lineThrough : null,
-                  fontSize: 14,
                 ),
                 child: Text(task.title),
               ),
@@ -211,7 +211,7 @@ Future<void> _showEditTaskDialog(BuildContext context, WidgetRef ref, TaskItem t
             CheckboxListTile(
               value: isRoutine,
               onChanged: (v) => setState(() => isRoutine = v ?? false),
-              title: const Text('Her gün tekrarlansın (Rutin)', style: TextStyle(fontSize: 14)),
+              title: const Text('Her gün tekrarlansın (Rutin)', style: TextStyle(fontSize: 16)),
               contentPadding: EdgeInsets.zero,
               controlAffinity: ListTileControlAffinity.leading,
             ),
@@ -258,7 +258,7 @@ class _Checkbox extends StatelessWidget {
         boxShadow: [
           if (checked)
             BoxShadow(
-              color: AppColors.taskCheckedBg.withOpacity(0.2),
+              color: AppColors.taskCheckedBg.withValues(alpha: 0.2),
               blurRadius: 4,
               offset: const Offset(0, 2),
             )
@@ -290,7 +290,7 @@ class _AddTaskButton extends ConsumerWidget {
       icon: const Icon(Icons.add_circle_outline_rounded, size: 18),
       label: const Text(
         'Görev Ekle',
-        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
       ),
     );
   }
@@ -319,7 +319,7 @@ class _AddTaskButton extends ConsumerWidget {
               CheckboxListTile(
                 value: isRoutine,
                 onChanged: (v) => setState(() => isRoutine = v ?? false),
-                title: const Text('Her gün tekrarlansın (Rutin)', style: TextStyle(fontSize: 14)),
+                title: const Text('Her gün tekrarlansın (Rutin)', style: TextStyle(fontSize: 16)),
                 contentPadding: EdgeInsets.zero,
                 controlAffinity: ListTileControlAffinity.leading,
               ),

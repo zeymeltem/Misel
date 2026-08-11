@@ -28,7 +28,7 @@ class ProfileScreen extends ConsumerWidget {
         children: [
           const ProfileHeader(),
           const SizedBox(height: 24),
-          Text('Çalışma İstatistikleri', style: AppTextStyles.sectionTitle.copyWith(fontSize: 18)),
+          Text('Çalışma İstatistikleri', style: AppTextStyles.sectionTitle.copyWith(fontSize: 16)),
           const SizedBox(height: 12),
           Row(
             children: [

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/task_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/percent_ring.dart';
+import '../../widgets/pixel_number.dart';
 import 'day_detail_screen.dart';
 
 const _weekdayNames = ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar'];
@@ -192,7 +193,8 @@ class _RangeTabs extends StatelessWidget {
                     entry.value,
                     style: TextStyle(
                       fontWeight: FontWeight.w700,
-                      fontSize: 13,
+                      fontSize: 16,
+                      letterSpacing: -0.5,
                       color: range == entry.key ? AppColors.streakText : AppColors.tabUnselectedText,
                     ),
                   ),
@@ -225,7 +227,7 @@ class _HistoryTile extends StatelessWidget {
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppSizes.statCardRadius),
-            border: Border.all(color: AppColors.chipUnselectedBorder.withOpacity(0.5)),
+            border: Border.all(color: AppColors.chipUnselectedBorder.withValues(alpha: 0.5)),
           ),
           child: Row(
             children: [
@@ -233,7 +235,7 @@ class _HistoryTile extends StatelessWidget {
                 size: 52,
                 percent: row.percent,
                 centerText: '%${row.percent.round()}',
-                centerFontSize: 11,
+                centerFontSize: 8,
                 strokeWidth: 6,
               ),
               const SizedBox(width: 14),
@@ -241,9 +243,9 @@ class _HistoryTile extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(row.label, style: AppTextStyles.taskTitle.copyWith(fontWeight: FontWeight.bold)),
+                    NumberText(row.label, style: AppTextStyles.taskTitle.copyWith(fontWeight: FontWeight.bold)),
                     const SizedBox(height: 2),
-                    Text('${row.completed} / ${row.total} görev', style: AppTextStyles.statLabel),
+                    NumberText('${row.completed} / ${row.total} görev', style: AppTextStyles.statLabel),
                   ],
                 ),
               ),

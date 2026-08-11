@@ -33,7 +33,7 @@ class MushroomPicker extends ConsumerWidget {
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
                     color: mushroom.id == selectedId
-                        ? AppColors.gardenBanner.withOpacity(0.5)
+                        ? AppColors.gardenBanner.withValues(alpha: 0.5)
                         : AppColors.cardBackground,
                     borderRadius: BorderRadius.circular(AppSizes.swatchRadius),
                     border: Border.all(
@@ -45,7 +45,7 @@ class MushroomPicker extends ConsumerWidget {
                     boxShadow: [
                       if (mushroom.id == selectedId)
                         BoxShadow(
-                          color: AppColors.swatchBorderSelected.withOpacity(0.1),
+                          color: AppColors.swatchBorderSelected.withValues(alpha: 0.1),
                           blurRadius: 6,
                           offset: const Offset(0, 3),
                         )
@@ -57,7 +57,13 @@ class MushroomPicker extends ConsumerWidget {
                       Expanded(
                         child: Padding(
                           padding: const EdgeInsets.all(2.0),
-                          child: Image.asset(mushroom.spriteAsset),
+                          child: SizedBox.expand(
+                            child: Image.asset(
+                              mushroom.spriteAsset,
+                              fit: BoxFit.contain,
+                              filterQuality: FilterQuality.none,
+                            ),
+                          ),
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -66,7 +72,7 @@ class MushroomPicker extends ConsumerWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          fontSize: 9,
+                          fontSize: 8,
                           fontWeight: mushroom.id == selectedId
                               ? FontWeight.bold
                               : FontWeight.normal,

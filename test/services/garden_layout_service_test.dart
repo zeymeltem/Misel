@@ -1,78 +1,73 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mantar_odak/data/models/session.dart';
 import 'package:mantar_odak/services/garden_layout_service.dart';
 
+Session _session(int i, {SessionStatus status = SessionStatus.success}) {
+  return Session(
+    id: 'session-$i',
+    startTime: DateTime(2026, 1, 1).add(Duration(minutes: i)),
+    targetMinutes: 25,
+    actualMinutes: 25,
+    status: status,
+    tagId: null,
+    mushroomTypeId: 'starter',
+    coinsEarned: 10,
+  );
+}
+
 void main() {
-  group('sessionIndexToGridCoord', () {
-    // Merkezden dışa sarmal: sağ, yukarı, sol, aşağı; segment uzunluğu
-    // 1,1,2,2,3,3,... Bu sabit değerler bozulursa spiral yönü kırılmış demektir.
-    const expected = [
-      GridCoord(0, 0), // index 0: merkez
-      GridCoord(1, 0), // index 1: sağ
-      GridCoord(1, 1), // index 2: yukarı
-      GridCoord(0, 1), // index 3: sol
-      GridCoord(-1, 1), // index 4: sol
-      GridCoord(-1, 0), // index 5: aşağı
-      GridCoord(-1, -1), // index 6: aşağı
-      GridCoord(0, -1), // index 7: sağ (yeni segment, uzunluk 3)
-      GridCoord(1, -1), // index 8: sağ
-      GridCoord(2, -1), // index 9: sağ
-      GridCoord(2, 0), // index 10: yukarı
-      GridCoord(2, 1), // index 11: yukarı
-      GridCoord(2, 2), // index 12: yukarı
-    ];
+  group('layoutGarden', () {
+    test('cancelled seanslar haritada hiç yer kaplamaz', () {
+      final sessions = [
+        _session(0),
+        _session(1, status: SessionStatus.cancelled),
+        _session(2),
+      ];
+      final cells = layoutGarden(sessions);
+      expect(cells.length, 2);
+      expect(cells.every((c) => c.session.status != SessionStatus.cancelled), isTrue);
+    });
 
-    for (var i = 0; i < expected.length; i++) {
-      test('index $i -> ${expected[i]}', () {
-        expect(sessionIndexToGridCoord(i), expected[i]);
-      });
-    }
-
-    test('deterministik: aynı index her zaman aynı koordinatı verir', () {
-      for (var i = 0; i < 200; i++) {
-        expect(sessionIndexToGridCoord(i), sessionIndexToGridCoord(i));
+    test('deterministik: aynı seans listesi her zaman aynı konumları verir', () {
+      final sessions = List.generate(40, (i) => _session(i));
+      final first = layoutGarden(sessions);
+      final second = layoutGarden(sessions);
+      for (var i = 0; i < first.length; i++) {
+        expect(first[i].position, second[i].position);
+        expect(first[i].plotIndex, second[i].plotIndex);
       }
     });
 
-    test('her koordinat benzersizdir (çakışma yok)', () {
-      final seen = <GridCoord>{};
-      for (var i = 0; i < 500; i++) {
-        final coord = sessionIndexToGridCoord(i);
-        expect(seen.contains(coord), isFalse, reason: 'index $i çakıştı: $coord');
-        seen.add(coord);
+    test('her parsel sessionsPerGardenPlot kadar slot tutar, sonrası sonraki parsele taşar', () {
+      final sessions = List.generate(sessionsPerGardenPlot + 5, (i) => _session(i));
+      final cells = layoutGarden(sessions);
+
+      final firstPlot = cells.take(sessionsPerGardenPlot);
+      final secondPlot = cells.skip(sessionsPerGardenPlot);
+
+      expect(firstPlot.every((c) => c.plotIndex == 0), isTrue);
+      expect(secondPlot.every((c) => c.plotIndex == 1), isTrue);
+    });
+
+    test('aynı parseldeki mantarlar birbirinin üstüne binmez (min mesafe korunur)', () {
+      final sessions = List.generate(sessionsPerGardenPlot, (i) => _session(i));
+      final cells = layoutGarden(sessions);
+
+      for (var i = 0; i < cells.length; i++) {
+        for (var j = i + 1; j < cells.length; j++) {
+          final distance = (cells[i].position - cells[j].position).distance;
+          expect(distance, greaterThan(0), reason: '${cells[i].session.id} ve ${cells[j].session.id} aynı yerde');
+        }
       }
     });
 
-    test('negatif index hata fırlatır', () {
-      expect(() => sessionIndexToGridCoord(-1), throwsArgumentError);
-    });
-  });
-
-  group('gardenRadius', () {
-    test('0 seansla bile en az 1 halka gösterir', () {
-      expect(gardenRadius(0), 1);
+    test('başarısız seans haritaya özel (topraklı) çürük mantar sprite\'ı alır', () {
+      final cells = layoutGarden([_session(0, status: SessionStatus.failed)]);
+      expect(cells.single.spriteAsset, rottenMushroomMapSprite);
     });
 
-    test('24 seansta hâlâ 1 halka', () {
-      expect(gardenRadius(24), 1);
-    });
-
-    test('25 seansta 2. halkaya geçer', () {
-      expect(gardenRadius(25), 2);
-    });
-
-    test('49 seansta hâlâ 2 halka', () {
-      expect(gardenRadius(49), 2);
-    });
-
-    test('50 seansta 3. halkaya geçer', () {
-      expect(gardenRadius(50), 3);
-    });
-
-    test('her 25 seansta bir halka daha ekler', () {
-      for (var rings = 1; rings <= 10; rings++) {
-        final countAtRingStart = (rings - 1) * 25;
-        expect(gardenRadius(countAtRingStart), rings);
-      }
+    test('boş seans listesi boş harita verir', () {
+      expect(layoutGarden([]), isEmpty);
     });
   });
 }

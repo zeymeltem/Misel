@@ -56,6 +56,8 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  firebase_auth_mocks: ^0.15.2
+  mock_exceptions: ^0.8.2
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -75,6 +77,20 @@ flutter:
 
   assets:
     - assets/images/
+
+  fonts:
+    - family: Pixelify
+      fonts:
+        - asset: assets/fonts/PixelifySans-Variable.ttf
+          weight: 400
+        - asset: assets/fonts/PixelifySans-Variable.ttf
+          weight: 700
+    - family: Silkscreen
+      fonts:
+        - asset: assets/fonts/Silkscreen-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Silkscreen-Bold.ttf
+          weight: 700
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

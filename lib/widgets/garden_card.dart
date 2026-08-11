@@ -7,6 +7,7 @@ import '../providers/garden_provider.dart';
 import '../theme/app_theme.dart';
 import 'coin_badge.dart';
 import 'garden_map.dart';
+import 'pixel_number.dart';
 
 /// Ana sayfanın üst kısmı: bahçe başlığı, coin rozeti, parsel ilerleme
 /// banner'ı ve bahçe haritası ([GardenMap]). Harita tamamen Session
@@ -39,9 +40,12 @@ class GardenCard extends ConsumerWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'yeni parsel: ${progress.sessionsUntilNextPlot} seans',
-                style: AppTextStyles.bannerText,
+              Expanded(
+                child: NumberText(
+                  'yeni parsel: ${progress.sessionsUntilNextPlot} seans',
+                  style: AppTextStyles.bannerText.copyWith(letterSpacing: -0.5),
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
               if (kDebugMode) const _DevAddFakeSessionsButton(),
             ],
@@ -63,10 +67,10 @@ class _DevAddFakeSessionsButton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return GestureDetector(
       onTap: () => ref.read(gardenDevNotifierProvider.notifier).addFakeSessions(500),
-      child: const Text(
+      child: const NumberText(
         '+500 test seansı',
         style: TextStyle(
-          fontSize: 11,
+          fontSize: 8,
           fontWeight: FontWeight.bold,
           color: AppColors.gardenBannerText,
           decoration: TextDecoration.underline,

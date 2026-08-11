@@ -4,11 +4,9 @@ import '../data/models/session.dart';
 import '../data/models/user_stats.dart';
 import '../data/mushroom_catalog.dart';
 import '../data/user_repository.dart';
+import '../services/garden_layout_service.dart' show sessionsPerGardenPlot;
 import 'auth_provider.dart';
 import 'session_provider.dart';
-
-/// Bahçede yeni parsel açmak için gereken başarılı seans sayısı.
-const int sessionsPerGardenPlot = 25;
 
 class GardenProgress {
   final int unlockedPlots;

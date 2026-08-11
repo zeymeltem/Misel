@@ -48,7 +48,7 @@ abstract final class AppColors {
   static const avatarText = Color(0xFF2563EB);
   static const chartBarBg = Color(0xFFE6DCD3);
   static const chartBarActive = Color(0xFFFF6B4A);
-  static const progressTrackBg = Color(0xFFE4E7DE);
+  static const progressTrackBg = Color(0xFFCDD3C2);
   static const progressFill = Color(0xFF6FCF87);
 
   /// Etiket rengi paleti; Tag.colorIndex bu listeye mod alınarak eşlenir.
@@ -63,64 +63,83 @@ abstract final class AppColors {
 }
 
 abstract final class AppTextStyles {
-  static const breadcrumb = TextStyle(fontSize: 12, color: AppColors.tabUnselectedText);
-  static const sectionTitle = TextStyle(fontSize: 22, fontWeight: FontWeight.w700);
+  static const breadcrumb = TextStyle(fontSize: 16, height: 1.5, color: AppColors.tabUnselectedText);
+  static const sectionTitle = TextStyle(fontSize: 24, height: 1.2, fontWeight: FontWeight.w700);
   static const coinValue = TextStyle(
-    fontSize: 14,
+    fontSize: 16,
+    height: 1.5,
     fontWeight: FontWeight.w700,
     color: AppColors.coinBadgeText,
   );
-  static const tab = TextStyle(fontSize: 13, fontWeight: FontWeight.w600);
+  static const tab = TextStyle(fontSize: 16, height: 1.5, fontWeight: FontWeight.w600);
   static const bannerText = TextStyle(
-    fontSize: 13,
+    fontSize: 16,
+    height: 1.5,
     fontWeight: FontWeight.w600,
     color: AppColors.gardenBannerText,
   );
   static const shopPrice = TextStyle(
-    fontSize: 13,
+    fontSize: 16,
+    height: 1.5,
     fontWeight: FontWeight.w700,
     color: AppColors.priceText,
   );
 
   static const streak = TextStyle(
-    fontSize: 13,
+    fontSize: 16,
+    height: 1.5,
     fontWeight: FontWeight.w600,
     color: AppColors.streakText,
   );
   static const fieldLabel = TextStyle(
-    fontSize: 13,
+    fontSize: 16,
+    height: 1.5,
     fontWeight: FontWeight.w600,
     color: AppColors.tabUnselectedText,
   );
-  static const durationValue = TextStyle(fontSize: 44, fontWeight: FontWeight.w700);
+  static const durationValue = TextStyle(fontSize: 48, height: 1.2, fontWeight: FontWeight.w700);
+  /// Seans sırasında geri sayan dijital saat (bkz. TimerScreen _ActiveView).
+  static const timerClock = TextStyle(
+    fontSize: 48,
+    height: 1.2,
+    fontWeight: FontWeight.w700,
+    fontFeatures: [FontFeature.tabularFigures()],
+    color: AppColors.taskTitle,
+  );
   static const coinPreview = TextStyle(
-    fontSize: 14,
+    fontSize: 16,
+    height: 1.5,
     fontWeight: FontWeight.w600,
     color: AppColors.coinPreviewText,
   );
-  static const chip = TextStyle(fontSize: 13, fontWeight: FontWeight.w600);
-  static const taskTitle = TextStyle(fontSize: 14, fontWeight: FontWeight.w500);
+  static const chip = TextStyle(fontSize: 16, height: 1.5, fontWeight: FontWeight.w600);
+  static const taskTitle = TextStyle(fontSize: 16, height: 1.5, fontWeight: FontWeight.w500);
   static const routineBadge = TextStyle(
-    fontSize: 11,
+    fontSize: 8,
+    height: 1.5,
     fontWeight: FontWeight.w700,
+    letterSpacing: -0.5,
     color: AppColors.routineBadgeText,
   );
-  static const warning = TextStyle(fontSize: 12, color: AppColors.warningText, height: 1.4);
+  static const warning = TextStyle(fontSize: 16, height: 1.5, color: AppColors.warningText);
 
-  static const profileName = TextStyle(fontSize: 18, fontWeight: FontWeight.w700);
+  static const profileName = TextStyle(fontSize: 16, height: 1.2, fontWeight: FontWeight.w700);
   static const statLabel = TextStyle(
-    fontSize: 12,
+    fontSize: 16,
+    height: 1.5,
     fontWeight: FontWeight.w600,
     color: AppColors.tabUnselectedText,
   );
   static const statValue = TextStyle(
-    fontSize: 20,
+    fontSize: 24,
+    height: 1.2,
     fontWeight: FontWeight.w700,
     color: AppColors.statValueText,
   );
-  static const legend = TextStyle(fontSize: 12, color: AppColors.tabUnselectedText);
+  static const legend = TextStyle(fontSize: 16, height: 1.5, color: AppColors.tabUnselectedText);
   static const avatarInitials = TextStyle(
     fontSize: 16,
+    height: 1.2,
     fontWeight: FontWeight.w700,
     color: AppColors.avatarText,
   );
@@ -132,7 +151,6 @@ abstract final class AppSizes {
   static const bannerRadius = 20.0;
   static const pillRadius = 20.0;
   static const shopItemRadius = 18.0;
-  static const gardenCardHeight = 340.0;
   static const shopItemSize = 92.0;
   static const gap = 12.0;
 
@@ -141,7 +159,7 @@ abstract final class AppSizes {
   static const swatchRadius = 14.0;
   static const taskCardRadius = 14.0;
   static const buttonRadius = 14.0;
-  static const ringSize = 240.0;
+  static const ringSize = 260.0;
 
   static const statCardRadius = 16.0;
   static const avatarSize = 96.0;
@@ -150,7 +168,25 @@ abstract final class AppSizes {
   static const barWidth = 18.0;
   static const progressBarHeight = 8.0;
 
-  static const gardenCellSize = 64.0;
+  /// Bahçe harita PNG'sinin (assets/images/garden_map.png) tasarlandığı
+  /// piksel boyutu; her "parsel" (harita sayfası) bu boyutta sabittir.
+  static const gardenMapWidth = 352.0;
+  static const gardenMapHeight = 400.0;
+
+  /// Harita PNG'sinin dış çerçevesi: içerik bu kadar pikselle içeri kayar.
+  static const gardenMapBorder = 8.0;
+
+  /// Çerçeve içindeki ızgara: 7 sütun x 8 satır, hücre başına 48px
+  /// (7*48 + 2*8 = 352, 8*48 + 2*8 = 400 — harita boyutuyla birebir).
+  static const gardenGridCols = 7;
+  static const gardenGridRows = 8;
+  static const gardenCellSize = 48.0;
+
+  /// Mantar sprite'ının kendi boyutu (pixel art 32px) ve hücre içindeki
+  /// yerleşimi: yatayda ortalanır, alttan bu kadar boşluk bırakılır (mantar
+  /// zeminden büyüyormuş gibi dursun diye).
+  static const gardenMushroomSize = 32.0;
+  static const gardenMushroomBottomGap = 5.0;
 }
 
 ThemeData buildAppTheme() {
@@ -158,5 +194,14 @@ ThemeData buildAppTheme() {
     useMaterial3: true,
     scaffoldBackgroundColor: AppColors.background,
     colorScheme: ColorScheme.fromSeed(seedColor: Colors.brown),
+    fontFamily: 'Pixelify',
+    textTheme: const TextTheme(
+      bodyLarge: TextStyle(fontSize: 16, height: 1.5),
+      bodyMedium: TextStyle(fontSize: 16, height: 1.5),
+      bodySmall: TextStyle(fontSize: 16, height: 1.5),
+      titleLarge: TextStyle(fontSize: 24, height: 1.2, fontWeight: FontWeight.w700),
+      titleMedium: TextStyle(fontSize: 16, height: 1.2, fontWeight: FontWeight.w600),
+      titleSmall: TextStyle(fontSize: 16, height: 1.2, fontWeight: FontWeight.w600),
+    ),
   );
 }

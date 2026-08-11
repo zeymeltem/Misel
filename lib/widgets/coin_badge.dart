@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/economy_provider.dart';
 import '../theme/app_theme.dart';
+import 'pixel_number.dart';
 
 /// Sağ üstte coin bakiyesini gösteren rozet. Sadece [userStatsProvider]'ı okur.
 class CoinBadge extends ConsumerWidget {
@@ -24,7 +25,7 @@ class CoinBadge extends ConsumerWidget {
         children: [
           const Icon(Icons.monetization_on, size: 16, color: AppColors.coinBadgeText),
           const SizedBox(width: 6),
-          Text('$coins', style: AppTextStyles.coinValue),
+          NumberText('$coins', style: AppTextStyles.coinValue),
         ],
       ),
     );

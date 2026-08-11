@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/stats_provider.dart';
 import '../theme/app_theme.dart';
+import 'pixel_number.dart';
 
 const _dayLabels = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
 
@@ -24,13 +25,13 @@ class DailyFocusChart extends ConsumerWidget {
         borderRadius: BorderRadius.circular(AppSizes.statCardRadius),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 10,
             offset: const Offset(0, 4),
           )
         ],
         border: Border.all(
-          color: AppColors.chipUnselectedBorder.withOpacity(0.5),
+          color: AppColors.chipUnselectedBorder.withValues(alpha: 0.5),
           width: 1,
         ),
       ),
@@ -85,36 +86,45 @@ class _Bar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final barAreaHeight = AppSizes.chartHeight - 34; // Give space for top label and bottom label
     return Column(
-      mainAxisAlignment: MainAxisAlignment.end,
+      mainAxisSize: MainAxisSize.max,
       children: [
         // Exact Minutes Label
-        Text(
+        NumberText(
           minutes > 0 ? '$minutes' : '0',
           style: TextStyle(
-            fontSize: 9,
+            fontSize: 8,
             fontWeight: minutes > 0 ? FontWeight.bold : FontWeight.normal,
             color: minutes > 0
                 ? (isToday ? AppColors.chartBarActive : AppColors.tabSelectedBg)
-                : AppColors.tabUnselectedText.withOpacity(0.5),
+                : AppColors.tabUnselectedText.withValues(alpha: 0.5),
           ),
         ),
         const SizedBox(height: 4),
-        Container(
-          width: AppSizes.barWidth,
-          height: (barAreaHeight * heightFraction).clamp(4.0, barAreaHeight),
-          decoration: BoxDecoration(
-            color: isToday ? AppColors.chartBarActive : AppColors.chartBarBg,
-            borderRadius: BorderRadius.circular(6),
-            boxShadow: [
-              if (isToday && minutes > 0)
-                BoxShadow(
-                  color: AppColors.chartBarActive.withOpacity(0.3),
-                  blurRadius: 4,
-                  spreadRadius: 1,
-                )
-            ],
+        // Kalan yüksekliği (metin etiketlerinden arta kalan) Expanded alır;
+        // böylece etiketlerin gerçek satır yüksekliği platforma göre değişse
+        // bile RenderFlex taşması olmaz.
+        Expanded(
+          child: Align(
+            alignment: Alignment.bottomCenter,
+            child: FractionallySizedBox(
+              heightFactor: heightFraction.clamp(0.05, 1.0),
+              child: Container(
+                width: AppSizes.barWidth,
+                decoration: BoxDecoration(
+                  color: isToday ? AppColors.chartBarActive : AppColors.chartBarBg,
+                  borderRadius: BorderRadius.circular(6),
+                  boxShadow: [
+                    if (isToday && minutes > 0)
+                      BoxShadow(
+                        color: AppColors.chartBarActive.withValues(alpha: 0.3),
+                        blurRadius: 4,
+                        spreadRadius: 1,
+                      )
+                  ],
+                ),
+              ),
+            ),
           ),
         ),
         const SizedBox(height: 6),
